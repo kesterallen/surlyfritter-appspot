@@ -1,0 +1,28 @@
+<html>
+<head>
+<style>
+input,
+select,
+textarea {
+    width: 100%;
+}
+</style>
+</head>
+<body>
+     <div id="container" style="width:200px">
+    <h1>{{message}}
+    <p>
+    <div>What do you need to add to {{addend1}} to get {{the_sum}}?</div>
+    <p>
+    <form name="flashcard_form" action="/flashcards" method="post">
+        <input type=hidden name="cards_done" value={{cards_done}}>
+        <input type=hidden name="addend1" value={{addend1}}> 
+        <input type=tel name="addend2"> <!-- tel forces numeric ios keyboard -->
+        <input type=hidden name="the_sum" value={{the_sum}}> 
+
+        <input type="submit" value="Am I Right?"> 
+    </form>
+    </h1>
+    </div>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<html>
+    <head>
+        <title>Pictures Page</title>
+        
+        {% include "cards.html" %}
+
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+        <link rel="alternate" type="application/rss+xml" title="RSS" href="/feeds/feed.xml"/>
+
+        <script>
+            if (navigator.userAgent.match(/iPhone/i)) {
+                document.write('<link type="text/css" rel="stylesheet" href="/stylesheets/iphone.css" />');
+            } else {
+                document.write('<link type="text/css" rel="stylesheet" href="/stylesheets/main-2col.css" />');
+            }
+        </script>
+
+        <script>
+        
+            function parseKeys(e) {
+                // Keynum: 37 is left arrow: back one pic
+                // Keynum: 39 is right arrow: forward one pic
+                var current = -1 + parseInt(document.getElementById("next_index").innerHTML);
+                var next = current + 1;
+                var prev = current - 1;
+
+                var keynum = (window.event) ? e.keyCode : e.which;
+                if (!e.altKey && keynum == 37) {
+                    window.open("/nav/" + prev, '_self', false);
+                } else if (!e.altKey && keynum == 39) {
+                    window.open("/nav/" + next, '_self', false);
+                } //else if (keynum == 84) {
+                    //alert('hi');
+                //}
+            }
+        </script>
+
+        <script>
+          var _gaq = _gaq || [];
+          _gaq.push(['_setAccount', 'UA-4792547-1']);
+          _gaq.push(['_trackPageview']);
+
+          (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+          })();
+        </script>
+
+    </head>
+    
+    <body onkeyup='parseKeys(event)'/>
+        <a href="/">
+            <div id="header">
+                <h1>Miriam and Julia Pictures</h1>
+            </div>
+        </a>
+
+        <div class="colmask rightmenu">
+
+            <div class="colleft">
+                <div class="col1wrap">
+                    <div class="col1">
+
+                        <p align='center'>
+                            Picture 
+                            <span id='next_index'>{{current_index|add:"1"}}</span> 
+                            of
+                            <span id='maxindex'>{{newest_index|add:"1"}}</span>
+                        </p>
+
+                        <p align="center">
+                            <span id="links">
+                                <a id="oldestlink"   href="/nav/0"                >First</a>
+                                <a id="olderlink"    href="/nav/{{prev_index}}"   >Previous</a>
+                                <a id="randomlink"   href="/nav/{{random_index}}" >Random</a>
+                                <a id="newerlink"    href="/nav/{{next_index}}"   >Next</a>
+                                <a id="newestlink"   href="/nav/{{newest_index}}" >Newest</a>
+                                &nbsp; &nbsp;
+                                <a id="permalink"    href="/navperm/{{count_index}}" >Permalink</a>
+                                <a id="imagelink"    href="/imgperm/{{count_index}}" >Image Link</a>
+                                &nbsp; &nbsp;
+                                <a id="yearagolink"  href='/timejump/{{current_index}}/-1.0'>One Year Earlier</a>
+                                <a id="yearnextlink" href='/timejump/{{current_index}}/1.0' >One Year Later</a>
+                                &nbsp; &nbsp;
+                                <a id="30moagolink"  href='/timejump/{{current_index}}/-2.5'>2.5 Years Earlier</a>
+                                <a id="30monextlink" href='/timejump/{{current_index}}/2.5' >2.5 Years Later</a>
+                            </span>
+                        </p>
+            
+                        <p align=center>
+                            <a href="/carousel">Filmstrip View (20 random pics)</a>
+                            <a href="/carousel/{{current_index}}">Filmstrip View (last 20 pics)</a>
+                            <a href="/same_age">Miri and Julia at the same age</a>
+                        </p>
+
+                        <p align='center'>
+                            <a id='picturelink' href='/nav/{{prev_index}}'>
+                                <img src='/img/{{current_index}}' border='0'/>
+                            </a>
+                        </p>
+                        <p align='center'><small>{{thedate}}</small></p>
+                        <p align='center'>
+                            <span style="float:left">{{picture_comments}}</span>
+                            <span style="float:right">
+                                <!--{{thetags}}-->
+                                {% for tag in thetags %} 
+                                    <a href="/tag/{{tag}}" target="_blank">{{tag}}</a>
+                                {% endfor %} 
+                            </span> 
+                        </p>
+                        
+                        <p>
+
+                        <!-- Display unique tags -->
+                        <hr> 
+                        Tags:
+                        <p>
+                        {% for tag in tags %} 
+                            {% if tag.tag_count > 45 %} 
+                                <span style="font-size:25px">
+                            {% else %} {% if tag.tag_count > 30 %}
+                                <span style="font-size:17px">
+                            {% else %} {% if tag.tag_count > 5 %}
+                                <span style="font-size:15px">
+                            {% else %}
+                                <span style="font-size:13px">
+                            {% endif %} {% endif %} {% endif %}
+                            <a href="/tag/{{tag.name}}">{{tag.name}}</a>
+                            </span>
+                        {% endfor %}
+                        </p>
+
+                        {% include "footer.html" %}
+                    </div>
+                </div>
+
+                <div class="col2">
+                    {{navbar}}
+                </div>
+
+            </div>
+        </div>
+    </body>
+</html>

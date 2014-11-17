@@ -1,0 +1,63 @@
+body {
+    margin-left: 7%;
+    padding-left: 5%;
+    width: 80%;
+    background-color: #fffffa;
+    /*max-width: 40em;*/
+    color: #333;
+    font-family: Arial, Verdana, Lucida, Helvetica, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    text-indent: -0.75em;
+    margin: 1.5em 0 0 0;
+    padding: 0;
+    color: #448;
+}
+
+h1 {
+    font-variant: small-caps;
+    letter-spacing: 0.05em;
+    margin-bottom:  0.3em;
+}
+
+h4, h5 { 
+    margin-top:    -0.3em; 
+    margin-bottom:  0.2em; 
+    margin-left:    0.5em; 
+    color: #333;
+}
+
+h6 { 
+    margin-top: -1.25em;
+}
+
+ul {
+    margin-top:  -0.5em;
+    margin-bottom:  1.5em;
+}
+
+ul.technicalExperience {
+    margin-left:  -2.0em;
+}
+
+ul.publications {
+    margin-top:   0.0em;
+}
+
+li {
+    line-height: 1.2em;
+} 
+
+p {
+    margin-top: -0.15em; 
+    margin-left: 0;
+    padding-left: 0;
+    color: #777;
+    font-size: 0.8em;
+    line-height: 1em;
+} 
+
+dt {
+    font-weight: bold;
+}

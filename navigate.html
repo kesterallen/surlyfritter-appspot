@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  {% include "bootstrap_includes.html" %}
+  {% include "cards.html" %}
+  <title>Pictures Page</title>
+</head>
+
+<body role="document">
+  {% include "bootstrap_navbar.html" %} 
+
+  <div class="container">
+    {% include "carousel_slider.html" %}
+
+    {% if carousel_slides|length == 1 %}
+      <p>
+        Tag this picture (tags can be comma-separated):<br>
+        <form name="addtag" action="/addtag" method="post"> 
+          <input type="hidden" name="count" value="{{current_index}}">
+          <input type="text" name="tag_name"> 
+          <input type="submit" value="Tag"> 
+        </form> 
+
+        Add a comment to this picture:<br>
+        <form name="addcomment" action="/addcomment" method="post"> 
+          <input type="hidden" name="current_index" value="{{current_index}}">
+          <textarea name="content" rows="1" cols="10"></textarea> 
+          <input type="submit" value="Add"> 
+        </form> 
+      </p>
+    {% endif %}
+
+  </div> <!-- /container -->
+
+  <div>{% include "tag_cloud.html" %}</div>
+
+  {% include "footer.html" %}
+</body>
+</html>

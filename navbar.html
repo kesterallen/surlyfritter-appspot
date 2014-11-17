@@ -1,0 +1,121 @@
+ <!-- Greet user  
+  -->
+ <p> {{welcome_text}} </p> 
+ <p> <a href="{{url}}">{{url_linktext}}</a> </p> 
+ {% if admin_flag %} <p><a href="/showuploadpage">Upload New Pictures</a><p> {% endif %}
+
+
+<!--
+ <p> 
+     {% if slideshow_flag %} 
+         <form name="slideshow" action="/" method="post"> 
+             <input type="hidden" name="slideshow_image_url" value="{{image}}"> 
+             <input type="submit" value="Stop Slideshow"> 
+     {% else %} 
+         <form name="slideshow" action="/slideshow" method="post"> 
+             <select name="slideshow_frequency" OnChange ="document.slideshow.submit()">
+                 <noscript><input type="submit" value="go"></noscript>
+                 <option value=0 selected>Start Slideshow
+                 <option value=2>2 sec refresh 
+                 <option value=3>3 sec refresh 
+                 <option value=5>5 sec refresh 
+                 <option value=30>30 sec refresh 
+             </select> 
+
+     {% endif %} 
+     </form> 
+ </p> 
+-->
+
+
+ <hr> 
+ <p> 
+     Tag this picture (tags can be comma-separated):<br>
+     <form name="addtag" action="/addtag" method="post"> 
+         <input type="hidden" name="count" value="{{current_index}}">
+         <input type="text" name="tag_name"> 
+         <input type="submit" value="Tag"> 
+     </form> 
+ </p> 
+
+
+<!-- If user is logged in, display Favorites list and buttons 
+-->
+{% if user %}
+    <hr>
+    <p>
+        Add a comment to this picture:<br>
+        <form name="addcomment" action="/addcomment" method="post"> 
+            <input type="hidden" name="current_index" value="{{current_index}}">
+            <textarea name="content" rows="1" cols="10"></textarea> 
+            <input type="submit" value="Add"> 
+        </form> 
+    </p>
+
+    <!-- Add a greeting to the page 
+    -->
+    <hr> 
+    <p> 
+        Add a greeting to this site:<br>
+        <form name="addgreeting" action="/addgreeting" method="post"> 
+            <textarea name="content" rows="1" cols="10"></textarea> 
+            <input type="submit" value="Add"> 
+        </form> 
+    </p>        
+
+     <hr> 
+    <form name="markfavorite" action="/markfavorite" method="post">
+        <input type="hidden" name="current_index" value="{{current_index}}">
+        <a href="javascript:document.markfavorite.submit();">Pick This Picture As A Favorite</a>
+    </form>
+
+    <form name="favoritespage" action="/favoritespage" method="post">
+        <a href="javascript:document.favoritespage.submit();">View Your Favorites</a>
+    </form>
+
+    <form name="clearfavorites" action="/clearfavorites" method="post">
+        <input type="hidden" name="current_index" value="{{current_index}}">
+        <a href="javascript:document.clearfavorites.submit();">Clear Your Favorites</a>
+    </form>
+{% endif %}
+
+<!-- Display greetings 
+<div class="greets">
+        {% for greeting in greetings %} 
+            <p> 
+            <em><b>
+            {% if greeting.author %} 
+                {{greeting.author.nickname}}
+            {% else %} 
+                Anonymous 
+            {% endif %}  
+            </b>
+            wrote at 
+            {{greeting.date.hour}}:{{greeting.date.minute}}
+            {{greeting.date.month}}/{{greeting.date.day}}/{{greeting.date.year}}:
+            </em>
+            <br>
+            {{greeting.content|escape}}
+            </p>        
+        {% endfor %} 
+</div>
+ -->
+
+
+<!-- Display unique tags 
+
+<hr> 
+Tags:
+<p>
+{% for tag in tags %} 
+    {% if tag.tag_count > 30 %} 
+        <div style="font-size:19px">
+    {% else %} {% if tag.tag_count > 15 %}
+        <div style="font-size:15px">
+    {% else %}
+        <div style="font-size:11px">
+    {% endif %} {% endif %}
+    
+    <a href="/imagesbytag?tag={{tag.name}}">{{tag.name}} ({{tag.tag_count}})</a></div>
+{% endfor %}
+-->

@@ -1,0 +1,126 @@
+<!-- Standard includes -->
+<script src="/static/jquery-2.1.1.min.js"></script>
+<link rel="stylesheet" href="/static/bootstrap-3.2.0/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="/static/bootstrap-3.2.0/dist/css/bootstrap-theme.min.css">
+<script src="/static/bootstrap-3.2.0/dist/js/bootstrap.min.js"></script>
+
+<!-- CSS to center the image in the carousel, increase slide speed, and limit the height -->
+<style type="text/css"> 
+    .carousel-inner > .item           { 
+      -webkit-transition: 0.2s ease-in-out left;
+      -moz-transition: 0.2s ease-in-out left;
+      -o-transition: 0.2s ease-in-out left;
+      transition: 0.2s ease-in-out left;
+    }
+    .carousel-inner > .item > img     { margin: 0 auto; max-height: 900px; } 
+    .carousel-inner > .item > a > img { margin: 0 auto; max-height: 900px; } 
+    .tag-links { position: relative; z-index: 1; }
+</style>
+
+<!-- Make the last carousel item link to the next set of slides, and make the
+first carousel item link to the previous set of slides.  -->
+<script>
+  function goLeft() {
+    var $is_slide_first = $('.carousel-inner .item:first').hasClass('active');
+    var $is_pic_newest = false;
+    {% if current_index %}
+      {% if newest_index %}
+        $is_pic_newest = {{current_index}} >= {{newest_index}};
+      {% endif %}
+    {% endif %}
+    var $disable_left_arrow_button = $is_slide_first && $is_pic_newest;
+    if ($disable_left_arrow_button) {
+      ; // no action on left arrow keypress
+    } else {
+      $('a.carousel-control.left')[0].click();
+    }
+  }
+
+  function goRight() {
+    $('a.carousel-control.right')[0].click();
+  }
+
+  function checkBounds($prev_index, $next_index) {
+    var $this = $('#myCarousel');
+
+    // Determine the indicies to jump to from the low and high end of the
+    // slideset:
+    if ($prev_index <= 0) {
+        $prev_index = 0;
+        if ($('.carousel-inner .item:first').hasClass('active')) {
+          ;//$this.children('.left.carousel-control').hide();
+        } else if ($('.carousel-inner .item:last').hasClass('active')) {
+          $this.children('.right.carousel-control').hide();
+        } else {
+          $this.children('.right.carousel-control').show();
+        } 
+    }
+    if ($next_index >= {{newest_index}}) {
+        $next_index = {{newest_index}};
+        if ($('.carousel-inner .item:first').hasClass('active') && 
+            {{current_index}} >= {{newest_index}})
+        {
+          $this.children('.left.carousel-control').hide();
+        } else if($('.carousel-inner .item:last').hasClass('active')) {
+          ;//$this.children('.right.carousel-control').hide();
+        } else {
+          $this.children('.left.carousel-control').show();
+        } 
+    }
+  }
+
+  function setLinks($prev_index, $next_index) {
+    var $this = $('#myCarousel');
+
+    // Single slide case
+    if ({{carousel_slides|length}} == 1) {
+      $this.children('.left.carousel-control').attr("href", "/nav/" + $next_index);
+      $this.children('.right.carousel-control').attr("href", "/nav/" + $prev_index);
+    // Multiple slides case-- first slide in carousel
+    } else if ($('.carousel-inner .item:first').hasClass('active')) {
+      $this.children('.left.carousel-control').attr("href", "/nav/" + $next_index + "/back");
+      $this.children('.right.carousel-control').attr("href", "/#myCarousel");
+    // Multiple slides case-- last slide in carousel
+    } else if ($('.carousel-inner .item:last').hasClass('active')) {
+      $this.children('.left.carousel-control').attr("href", "/#myCarousel");
+      $this.children('.right.carousel-control').attr("href", "/nav/" + $prev_index);
+    // Multiple slides case-- a middle slide in carousel
+    } else {
+      $this.children('.left.carousel-control').attr("href", "/#myCarousel");
+      $this.children('.right.carousel-control').attr("href", "/#myCarousel");
+    } 
+  }
+
+  function checkItem() {
+    var $prev_index = {{current_index}} - {{carousel_slides|length}}
+    var $next_index = {{current_index}} + {{carousel_slides|length}}
+    checkBounds($prev_index, $next_index);
+    setLinks($prev_index, $next_index);
+  }
+
+  $(document).ready(function(){
+      // Run checkItem on initial load
+      checkItem();
+      // Bind the finish-slide event to checkItem function
+      $('#myCarousel').on('slid.bs.carousel', checkItem);
+
+      // Bind arrowkey actions
+      $(document).bind('keyup', function(e) {
+        if(e.keyCode==39) {
+          goRight();
+        } else if (e.keyCode==37) {
+          goLeft();
+        }
+      });
+    });
+</script>
+
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="author" content="">
+<link rel="icon" href="/favicon.ico">
+
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+<link rel="alternate" type="application/rss+xml" title="RSS" href="/feeds/feed.xml"/>

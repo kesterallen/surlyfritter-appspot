@@ -1,0 +1,58 @@
+<!-- Carousel ================================================== -->
+<div id="myCarousel" class="carousel slide" data-ride="carousel" data-interval=false data-wrap=false>
+  <!-- Indicators -->
+  {% if carousel_slides|length > 1 %}
+    <ol class="carousel-indicators">
+        {% for carousel_slide in carousel_slides %}
+            <li data-target="#myCarousel" 
+                data-slide-to="{{forloop.counter0}}"
+                {% if is_carousel_back %}
+                    {% if forloop.counter == carousel_slides|length %} class="active"{% endif %}
+                {% else %}
+                    {% if forloop.counter0 == 0 %} class="active"{% endif %}
+                {% endif %}
+            >
+            </li>
+        {% endfor %}
+    </ol>
+  {% endif %}
+
+  <div class="carousel-inner">
+    {% for carousel_slide in carousel_slides %}
+      <div class="item
+        {% if is_carousel_back %}
+          {% if forloop.counter == carousel_slides|length %} active{% endif %}
+        {% else %}
+          {% if forloop.counter0 == 0 %} active{% endif %}
+        {% endif %}
+        "
+      >
+
+        {% if carousel_slides|length > 1 %} <a href="/nav/{{carousel_slide.index}}/1"> {% endif %}
+        <img src="/img/{{carousel_slide.index}}" alt="{{carousel_slide.picture_comments}}">
+        {% if carousel_slides|length > 1 %} </a> {% endif %}
+
+        <div class="container">
+          <div class="carousel-caption">
+            <p class="tag-links">
+              {{carousel_slide.index|add:"1"}}{% if newest_index %} / {{newest_index|add:"1"}} {% endif %}
+              {{carousel_slide.picture_comments}}
+              {% for tag in carousel_slide.tags %}
+                <a href="/tag/{{tag}}">{{tag}} </a>
+              {% endfor %} 
+            </p>
+            <p>{{carousel_slide.date}}</p>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  {% if carousel_slides|length > 1 %}
+    <a class="left carousel-control" href="#myCarousel" role="button" data-slide="prev">
+      <span class="glyphicon glyphicon-chevron-left"></span>
+    </a>
+    <a class="right carousel-control" href="#myCarousel" role="button" data-slide="next">
+      <span class="glyphicon glyphicon-chevron-right"></span>
+    </a>
+  {% endif %}
+</div><!-- /carousel -->

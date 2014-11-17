@@ -1,0 +1,33 @@
+
+<html>
+  <head>
+  <title>Side-by-side Page</title>
+  {% include "cards.html" %}
+  {% include "bootstrap_includes.html" %}
+  </head>
+
+  <body>
+  {% include "bootstrap_navbar.html" %} 
+
+  <table>
+    <tr>
+      {% for info_pic in info_pics %}
+        <td>
+          {{info_pic.date}}:
+          Miri is  {{info_pic.miri_age|floatformat:1}},
+          Julia is {{info_pic.julia_age|floatformat:1}}.
+        </td>
+      {% endfor %}
+    </tr>
+    <tr>
+      {% for info_pic in info_pics %}
+        <td>
+          <a href="/navperm/{{info_pic.picture_index.count}}">
+            <img src="/imgperm/{{info_pic.picture_index.count}}" width="640px"/>
+          </a>
+        </td>
+      {% endfor %}
+    </tr>
+  </table>
+  </body>
+</html>

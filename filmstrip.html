@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Filmstrip View</title>
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+    <script type="text/javascript" charset="utf-8">
+        var photos= new Array(0);
+        {% for pic in pics %} 
+            photos.push({index: {{pic.dateOrderIndex}}, caption: "{{pic.comment}}"});
+        {% endfor %}
+
+        var currentPhoto = 0;
+        var animateDuration = 50;
+        
+        function shiftPhoto(direction) {
+            if (direction > 0) {
+                currentPhoto += 1;
+            } else  {
+                currentPhoto -= 1;
+            }
+
+            if (currentPhoto < 0) {
+                currentPhoto = 0;
+                return;
+            } 
+            if (currentPhoto > photos.length - 1) {
+                currentPhoto = photos.length - 1;
+                return;
+            }
+
+            if (direction > 0) {
+                $('#filmstrip').animate({'left': '-={{displaywidth}}'}, animateDuration);
+            } else {
+                $('#filmstrip').animate({'left': '+={{displaywidth}}'}, animateDuration);
+            }
+            $('#caption').html('<p align=center>' + photos[currentPhoto]['caption'] + '</p>');
+        }
+
+        function nextPhoto() {
+            shiftPhoto(1);
+        }
+
+        function prevPhoto() {
+            shiftPhoto(-1);
+        }
+
+        function parseKeys(e) {
+            var keynum = (window.event) ? e.keyCode : e.which;
+            if (e.altKey) {
+                return;
+            }
+            if (keynum == 37) { 
+                prevPhoto();
+            } else if (keynum == 39) {
+                nextPhoto();
+            } 
+        }
+
+        jQuery(document).ready(function($){
+            $('#caption').html('<p>' + photos[currentPhoto]['caption'] + '</p>');
+            
+            for (var i=0; i < photos.length; i++) {
+                $('#filmstrip').append(
+                    '<a href=/nav/' + photos[i]['index'] + '>' +
+                         '<img src=/img/' + photos[i]['index'] + ' width={{displaywidth}}>' +
+                     '</a>'
+                );
+            }
+            $('#filmstrip').css({'width': {{displaywidth}} * photos.length});
+            
+            $('#next').click(nextPhoto);
+            $('#prev').click(prevPhoto);
+        });
+        
+    </script>
+    
+    <style type="text/css" media="screen">
+        
+        #container{
+                width:{{displaywidth}}px;
+                height:{{containerheight}}px;
+                background-color:#191919;
+                padding:10px;
+        }
+        
+        #photobox{
+            float:left;
+            background-color:#ebebeb;
+            width:{{displaywidth}}px;
+            height:{{pictureheight}}px;
+        }
+        
+        #nav{
+            float:left;
+            width:{{displaywidth}}px;
+            height:80px;
+            background-color:#ebebeb;
+            font-size:40px;
+        }
+        
+        #image{
+            width:{{displaywidth}}px;
+            height:{{pictureheight}}px;
+            overflow:hidden;
+            position:relative;
+        }
+        
+        #filmstrip{
+            position:absolute;
+        }
+        
+        #filmstrip img{
+            float:left;
+        }
+        
+        #caption{
+            float:left;
+            /*color:#ebebeb;*/
+            width:{{displaywidth}}px;
+            height:100px;
+            font-size:14px;
+        }
+        
+        #next{
+            float:right;
+        }
+        
+        a{
+            text-decoration:none;
+            color:#191919;
+            padding-left:10px;
+            padding-right:10px;
+        }
+    </style>
+    
+    
+</head>
+<body onkeyup='parseKeys(event)'>
+    <div id="container">
+        <div id="photobox">
+            <div id="caption"></div>
+            <div id="nav">
+                <a href="#" id="prev">&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</a> 
+                <a href="#" id="next">&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;</a>
+            </div>
+            <div id="image">
+                <div id="filmstrip"></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

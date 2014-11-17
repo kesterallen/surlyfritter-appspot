@@ -1,0 +1,25 @@
+
+<html>
+<!--<head>{% include "bootstrap_includes.html" %}</head>-->
+<body role="document">
+  <!--
+  {% include "bootstrap_navbar.html" %} 
+
+  <div class="container">
+    {% include "carousel_slider.html" %}
+  </div>
+  -->
+
+  <table>
+    <tr>
+      <td>Pic from when Miri was {{years_old|floatformat:1}} years old: {{miri_date}}</td>
+      <td>Pic from when Julia was {{years_old|floatformat:1}} years old: {{julia_date}}</td>
+    </tr>
+    <tr>
+      <td><a href="/nav/{{miri_index.index.dateOrderIndex}}"> <img src="/img/{{miri_index.index.dateOrderIndex}}" width="640px"/></a></td>
+      <td><a href="/nav/{{julia_index.index.dateOrderIndex}}"> <img src="/img/{{julia_index.index.dateOrderIndex}}" width="640px"/></a></td>
+    </tr>
+  </table>
+  <a href="/side_by_side/{{miri_index.index.count}}/{{julia_index.index.count}}"> Permalink to this page </a>
+</body>
+</html>

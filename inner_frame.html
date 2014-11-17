@@ -1,0 +1,25 @@
+<html>
+    <body>
+        <p align='center'>Picture <span id='theindex'>{{theindex}}</span> of <span id='maxindex'>{{maxindex}}</span></p>
+        <p align="center">
+            <span id="thelinks">
+            <a href="javascript:parent.document.location='/navigate?current_index={{oldest_index}}'">First</a>
+            <a href="javascript:parent.document.location='/navigate?current_index={{older_index}}'" >Previous</a>
+            <a href="javascript:parent.document.location='/navigate?current_index={{random_index}}'">Random</a>
+            <a href="javascript:parent.document.location='/navigate?current_index={{newer_index}}'" >Next</a>
+            <a href="javascript:parent.document.location='/navigate?current_index={{newest_index}}'">Newest</a>
+            &nbsp;
+            &nbsp;
+            <a href="javascript:parent.document.location='/navigate?current_index={{current_index}}'">permalink</a>
+            </span>
+        </p>
+
+        <p align='center'><span id='thepicture'>
+            <a href="javascript:parent.document.location='/navigate?current_index={{random_index}}'"><img src='/imgbyindex?index={{current_index}}' border='0'/></a>
+        </p>
+        
+        {{picture_comments}}
+
+        <iframe height=75 width=500 src='/datebyindex?index={{current_index}}'></iframe></span>
+    </body>
+</html>

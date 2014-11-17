@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+    <channel>
+        <title>Miri and Julia Pictures (Appspot)</title>
+        <link>http://surlyfritter.appspot.com</link>
+        <description>Lots of pictures of the girls</description>
+        <language>en-us</language>
+        <atom:link href="http://surlyfritter.appspot.com/feeds/feed.xml" rel="self" type="application/rss+xml" />
+
+        {% for picture_index in picture_indexes %}
+        <item>
+            <title>Picture of Miri or Julia uploaded at {{picture_index.pix_ref.date|date:"d M Y"}}</title>
+            <link>http://surlyfritter.appspot.com/navperm/{{picture_index.count}}</link>
+            <guid>http://surlyfritter.appspot.com/navperm/{{picture_index.count}}</guid>
+            <pubDate>{{picture_index.pix_ref.date|date:"c"}}</pubDate>
+            <description>
+                A picture of Miri or Julia that was uploaded at {{picture_index.pix_ref.date|date:"d M Y"}}
+                <![CDATA[
+                <p><a href="http://surlyfritter.appspot.com/navperm/{{picture_index.count}}">
+                        <img src="http://surlyfritter.appspot.com/imgperm/{{picture_index.count}}" 
+                             alt="Miri or Julia Picture uploaded at {{picture_index.pix_ref.date|date:"d M Y"}}"
+                             title="Miri or Julia Picture uploaded at {{picture_index.pix_ref.date|date:"d M Y"}}"/>
+                </a></p>
+                ]]>
+            </description>
+        </item>
+        {% endfor %}
+
+    </channel>
+</rss>
+

@@ -1,0 +1,43 @@
+<html>
+    <head>
+        {% include "bootstrap_includes.html" %}
+        <link type="text/css" rel="stylesheet" href="/stylesheets/main-2col.css" />
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+        <title>{{user}}'s Picture Page</title>
+    </head>
+
+    <body>
+        {% include "bootstrap_navbar.html" %} 
+
+        <div id="header">
+            <h1>{{user}}'s favorites</h1>
+        </div>
+
+        <div class="colmask rightmenu">
+            <div class="colleft">
+
+                <div class="col1wrap">
+                    <div class="col1">
+                        {% for user_favorite in user_favorites %}
+                            <p>
+                            <br>Image uploaded at {{user_favorite.picture_index.pix_ref.date|date:"d M Y"}}
+                            <br>Image picked as favorite at {{user_favorite.date|date:"d M Y"}}
+                            <br>
+                            <a href="/navigate?current_index={{user_favorite.picture_index.count}}">
+                                <img src="/img?img_name={{user_favorite.picture_index.pix_ref.name}}"/>
+                            </a>
+                            </p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="col2">
+                    {{leftbar}}
+                </div>
+
+            </div>
+        </div>
+
+        <img src="http://code.google.com/appengine/images/appengine-noborder-120x30.gif" alt="Powered by Google App Engine" />
+  </body>
+</html>
