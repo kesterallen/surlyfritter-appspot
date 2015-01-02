@@ -1,5 +1,29 @@
 <html>
+<head>
+<title>Side-by-side Page</title>
+{% include "cards.html" %}
+{% include "bootstrap_includes.html" %}
+</head>
 <body>
+{% include "bootstrap_navbar.html" %} 
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-lg-6 col-md-6 col-sm-12 col-xm-12">
+      <strong>Pic from when Miri was {{years_old|floatformat:1}} years old: {{miri_date}}</strong>
+      <a href="/nav/{{miri_index.index.dateOrderIndex}}">
+        <img src="/img/{{miri_index.index.dateOrderIndex}}" class="thumbnail img-responsive"/>
+      </a>
+    </div>
+    <div class="col-lg-6 col-md-6 col-sm-12 col-xm-12">
+      <strong>Pic from when Julia was {{years_old|floatformat:1}} years old: {{julia_date}}</strong>
+      <a href="/nav/{{julia_index.index.dateOrderIndex}}">
+        <img src="/img/{{julia_index.index.dateOrderIndex}}" class="thumbnail img-responsive"/>
+      </a>
+    </div>
+  </div>
+</div>
+<!--
   <table>
     <tr>
       <td>Pic from when Miri was {{years_old|floatformat:1}} years old: {{miri_date}}</td>
@@ -10,6 +34,7 @@
       <td><a href="/nav/{{julia_index.index.dateOrderIndex}}"> <img src="/img/{{julia_index.index.dateOrderIndex}}" width="640px"/></a></td>
     </tr>
   </table>
+-->
   <a href="/side_by_side/{{miri_index.index.count}}/{{julia_index.index.count}}"> Permalink to this page </a>
 </body>
 </html>

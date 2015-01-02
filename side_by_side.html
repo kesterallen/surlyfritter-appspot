@@ -1,33 +1,25 @@
-
 <html>
-  <head>
-  <title>Side-by-side Page</title>
-  {% include "cards.html" %}
-  {% include "bootstrap_includes.html" %}
-  </head>
+<head>
+<title>Side-by-side Page</title>
+{% include "cards.html" %}
+{% include "bootstrap_includes.html" %}
+</head>
 
-  <body>
-  {% include "bootstrap_navbar.html" %} 
+<body>
+{% include "bootstrap_navbar.html" %} 
 
-  <table>
-    <tr>
-      {% for info_pic in info_pics %}
-        <td>
-          {{info_pic.date}}:
-          Miri is  {{info_pic.miri_age|floatformat:1}},
-          Julia is {{info_pic.julia_age|floatformat:1}}.
-        </td>
-      {% endfor %}
-    </tr>
-    <tr>
-      {% for info_pic in info_pics %}
-        <td>
-          <a href="/navperm/{{info_pic.picture_index.count}}">
-            <img src="/imgperm/{{info_pic.picture_index.count}}" width="640px"/>
-          </a>
-        </td>
-      {% endfor %}
-    </tr>
-  </table>
-  </body>
+<div class="container-fluid">
+  <div class="row">
+    {% for pic in pics %}
+      <div class="col-lg-6 col-md-6 col-sm-12 col-xm-12">
+        <strong>{{pic.date}}: Miri is {{pic.miri_age|floatformat:1}}, Julia is {{pic.julia_age|floatformat:1}}.</strong>
+        <a href="/navperm/{{pic.picture_index.count}}">
+          <img src="/imgperm/{{pic.picture_index.count}}" class="thumbnail img-responsive"/>
+        </a>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+</body>
 </html>

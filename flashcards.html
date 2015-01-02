@@ -9,10 +9,19 @@ textarea {
 </style>
 </head>
 <body>
+     <div id="fb-root"></div>
+     <script>(function(d, s, id) {
+       var js, fjs = d.getElementsByTagName(s)[0];
+       if (d.getElementById(id)) return;
+       js = d.createElement(s); js.id = id;
+       js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.0";
+       fjs.parentNode.insertBefore(js, fjs);
+     }(document, 'script', 'facebook-jssdk'));</script>
      <div id="container" style="width:200px">
     <h1>{{message}}
     <p>
     <div>What do you need to add to {{addend1}} to get {{the_sum}}?</div>
+    <div class="fb-share-button" data-href="http://poresopropongo.mx/300" data-layout="button_count"></div>
     <p>
     <form name="flashcard_form" action="/flashcards" method="post">
         <input type=hidden name="cards_done" value={{cards_done}}>

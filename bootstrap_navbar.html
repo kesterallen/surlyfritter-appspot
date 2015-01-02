@@ -23,6 +23,28 @@
         <li><a href="/nav/{{random_index}}">Random</a></li>
         <li><a href="#" onclick="goRight()">Previous</a></li>
 
+        <li><a href="/nav/0">Oldest</a></li>
+        <li><a href="/nav/{{newest_index}}">Newest</a></li>
+
+        <!--
+        <li>
+          <form class="navbar-form navbar-right" action="/timejump" method="POST" >
+            <div class="input-group">
+              <input type="hidden" name="current_index" value="{{current_index}}">
+              <input type="text"
+                     class="form-control"
+                     name="years"
+                     size="10"
+                     placeholder="Years Jump">
+            </div>
+          </form>
+        </li>
+        -->
+        <li><a href="/timejump/{{current_index}}/2.5">+2.5 yrs</a></li>
+        <li><a href="/timejump/{{current_index}}/1.0">+1 yrs</a></li>
+        <li><a href="/timejump/{{current_index}}/-1.0">-1 yrs</a></li>
+        <li><a href="/timejump/{{current_index}}/-2.5">-2.5 yrs</a></li>
+        <!--
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown">Navigation<span class="caret"></span></a>
           <ul class="dropdown-menu" role="menu">
@@ -39,6 +61,7 @@
             <li><a href="/timejump/{{current_index}}/2.5">2.5 years later</a></li>
           </ul>
         </li>
+        -->
 
         <li><a href="/carousel">Rand Filmstrip</a></li>
         <li><a href="/carousel/{{current_index}}">Prev Filmstrip</a></li>
@@ -58,7 +81,7 @@
           <li><a href="/showuploadpage">Upload New Pictures</a></li>
         {% endif %}
         <li><a href="{{url}}">{{url_linktext}}</a></li> 
-        </ul>
+      </ul>
     </div><!--/.nav-collapse -->
   </div>
 </div>

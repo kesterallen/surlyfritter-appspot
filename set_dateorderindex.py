@@ -52,7 +52,6 @@ def get_date_orders():
                 print 'already have dateString for %d' % i
             continue
 
-        
         r = requests.get(get_url("/getdateorderstring?index=%d" % i))
         if r.status_code == 200:
             re_match = re.search(
@@ -73,6 +72,7 @@ def get_date_orders():
     #
     for i in reversed(range(len(date_orders))):
         if date_orders[i][0] == options.default_date:
+            print "GRABBING NEXT PICTURE'S DATE -- DEFAULT DATE DETECTED"
             date_orders[i][0] = date_orders[i+1][0]
         # TODO need to handle the last-item-doesn't-have-a-date case
 
@@ -197,6 +197,7 @@ def main():
 
     # Save off the new correct date order data if updates have been made:
     #
+    #import ipdb; ipdb.set_trace()
     if options.changeIndices:
         if options.verbose:
             print "Saving %s" % options.pickle_file

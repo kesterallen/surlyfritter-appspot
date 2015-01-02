@@ -421,17 +421,33 @@ class TimeJumpHandler(RequestHandlerParent):
         shifted_index = self.get_index_from_date(shifted_date).dateOrderIndex
         self.jump_to(shifted_index, shift_years=None)
 
-    def post(self):
-        """Default to 1 one-year back jump"""
-        self.jump_to(None, -1.0)
-
-    def get(self, index, years='-1.0'):
+    def get(self, index=None, years=None):
         """Redirect to the picture closest to 'years' from the current ('index')
         picture"""
-        index_int = int(index)
-        shift_years = float(years)
-        logging.debug("years in TimeJump.get %s" % shift_years)
-        self.jump_to(index_int, shift_years)
+        try:
+            index = int(float(index))
+        except:
+            try:
+                index = int(float(self.request.get('current_index')))
+            except:
+                index = 666
+                logging.debug(
+                    "Something wrong in index read in TimeJumpHandler.get")
+
+        try:
+            years = float(years)
+        except:
+            try:
+                years = float(self.request.get('years'))
+            except:
+                years = -1
+
+        logging.debug("years in TimeJump.get %s" % years)
+        self.jump_to(index, years)
+
+    def post(self):
+        #TODO
+        self.redirect('/highestindex')
 
 class NavigateByDateHandler(TimeJumpHandler):
     def get(self, date_str=None):
@@ -485,13 +501,13 @@ class SideBySideHandler(RequestHandlerParent):
 
         count_indices = [int(ia) for ia in index_args.split("/") if ia]
 
-        info_pics = []
+        pics = []
         for count_index in count_indices:
             pi = PictureIndex.get(count_index, by_date=False)
             if pi:
                 date = str_to_dt(pi.dateOrderString)
 
-                info_pics.append({
+                pics.append({
                     'picture_index': pi,
                     'date': date,
                     'miri_age': float((date - m_date).days) / 365.25,
@@ -501,7 +517,7 @@ class SideBySideHandler(RequestHandlerParent):
                 logging.info("skipping null picture_index %s" % count_index)
 
 
-        template_values = { 'info_pics': info_pics }
+        template_values = { 'pics': pics, 'count_index': pics[0]['picture_index'].count, }
         template_text = render_template_text('side_by_side.html', template_values)
         self.writeOutput(template_text)
 
@@ -540,9 +556,9 @@ class SameAgeJumpHandler(TimeJumpHandler):
         template_values = {
             'years_old': years_old,
             'miri_index': indices[0],
-            'miri_date':  get_date_for_slides(indices[0]['index'].count), #DateByIndexHandler().getText(indices[0]['index'].count), 
+            'miri_date':  get_date_for_slides(indices[0]['index'].count),
             'julia_index': indices[1],
-            'julia_date': get_date_for_slides(indices[1]['index'].count), #DateByIndexHandler().getText(indices[1]['index'].count), 
+            'julia_date': get_date_for_slides(indices[1]['index'].count),
             'carousel_slides': carousel_slides,
         }
         template_text = render_template_text('same_age.html', template_values)
