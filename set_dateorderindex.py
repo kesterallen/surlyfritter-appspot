@@ -52,11 +52,11 @@ def get_date_orders():
                 print 'already have dateString for %d' % i
             continue
 
-        r = requests.get(get_url("/getdateorderstring?index=%d" % i))
-        if r.status_code == 200:
+        req = requests.get(get_url("/getdateorderstring?index=%d" % i))
+        if req.status_code == 200:
             re_match = re.search(
                             r'^date order string is ([\d:]+ [\d:]+) (\d+)', 
-                            r.text)
+                            req.text)
             date_order = [re_match.group(1), re_match.group(2)]
             print 'getting datestring for count index %d: %s' % (i, date_order)
             date_orders.append(date_order)
@@ -81,7 +81,7 @@ def get_date_orders():
     date_orders.sort()
     return date_orders
 
-def setDateIndicies(date_orders, old_date_orders):
+def set_date_indices(date_orders, old_date_orders):
     # Print the update command, and if specified, actually do the update of
     # the site's real ordering:
     #
@@ -107,6 +107,8 @@ def setDateIndicies(date_orders, old_date_orders):
         if options.changeIndices:
             try:
                 requests.get(get_url(url))
+                if options.verbose:
+                    print "running set_date_indices for", url
             except requests.RequestException as err:
                 print "error running: %s, %s" % (url, err)
             time.sleep(options.pause_seconds)
@@ -193,11 +195,10 @@ def main():
         old_date_orders = []
 
     flush_memcache()
-    setDateIndicies(date_orders, old_date_orders)
+    set_date_indices(date_orders, old_date_orders)
 
     # Save off the new correct date order data if updates have been made:
     #
-    #import ipdb; ipdb.set_trace()
     if options.changeIndices:
         if options.verbose:
             print "Saving %s" % options.pickle_file

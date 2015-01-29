@@ -589,9 +589,9 @@ class AddDateOrderString(RequestHandlerParent):
 
         logging.info("index: %s" % index)
         self.writeOutput("index: %s" % index)
-        pictureIndex = PictureIndex.get(index)
+        pictureIndex = PictureIndex.all().filter('count', index).get()
         logging.info("index: %s" % pformat(pictureIndex))
-        if index is None:
+        if pictureIndex is None:
             self.writeOutput("no picture index!")
             return
 
@@ -1369,8 +1369,8 @@ class OrphanHandler(RequestHandlerParent):
                             ).filter("pix_ref =", picture.key()).count(1)
                 if not ref_count:
                     iorphan += 1
-                    logging.info('count is %s, count + iorphanis %s' % (count, count+iorphan))
-                    dateOrderString = get_date_order_string(count=count,
+                    logging.info('count is %s, count + iorphan is %s' % (count, count+iorphan))
+                    dateOrderString = get_date_order_string(count=count+iorphan,
                                                             rawDate=picture.getDateRaw())
                     pictureIndex = PictureIndex.make_picture_index(
                                        picture,
