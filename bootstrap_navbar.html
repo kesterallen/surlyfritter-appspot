@@ -1,16 +1,20 @@
-<div class="navbar navbar-default">
-  <div class="container">
+<div class="navbar navbar-default" role="navigation">
+  <div class="container-fluid">
+
     <div class="navbar-header">
+
       <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
         <span class="sr-only">Toggle navigation</span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
+
       <a class="navbar-brand" href="/">Miriam and Julia Pictures</a>
+
     </div>
     <div class="navbar-collapse collapse">
-      <ul class="nav navbar-nav">
+      <ul class="nav navbar-nav navbar-right">
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown">Permalinks<span class="caret"></span></a>
           <ul class="dropdown-menu" role="menu">
@@ -19,12 +23,11 @@
           </ul>
         </li>
 
-        <li><a href="#" onclick="goLeft()">Next</a></li>
-        <li><a href="/nav/{{random_index}}">Random</a></li>
-        <li><a href="#" onclick="goRight()">Previous</a></li>
-
-        <li><a href="/nav/0">Oldest</a></li>
-        <li><a href="/nav/{{newest_index}}">Newest</a></li>
+        <li><a href="/nav/{{newest_index}}">&laquo;</a></li>  <!-- "<<" newest -->
+        <li><a href="#" onclick="goLeft()">&lsaquo;</a></li>  <!-- "<" newer image -->
+        <li><a href="/nav/{{random_index}}">?</a></li>        <!-- random image -->
+        <li><a href="#" onclick="goRight()">&rsaquo;</a></li> <!-- ">" older image -->
+        <li><a href="/nav/0">&raquo;</a></li>                 <!-- ">>" first (oldest) image -->
 
         <!--
         <li>
@@ -78,7 +81,7 @@
         <li><a href="/same_age">Same Age</a></li>
 
         {% if admin_flag %} 
-          <li><a href="/showuploadpage">Upload New Pictures</a></li>
+          <li><a href="/showuploadpage">Upload</a></li>
         {% endif %}
         <li><a href="{{url}}">{{url_linktext}}</a></li> 
       </ul>
