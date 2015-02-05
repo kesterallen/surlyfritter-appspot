@@ -16,8 +16,8 @@
     <div class="navbar-collapse collapse">
       <ul class="nav navbar-nav navbar-right">
 
-        <li><a href="/navperm/{{count_index}}/1"><span class="glyphicon glyphicon-link"></span></a></li> <!-- page permalink -->
-        <li><a href="/imgperm/{{count_index}}"><span class="glyphicon glyphicon-link"></span><span class="glyphicon glyphicon-picture"></span></a></li> <!-- image permalink -->
+        <li><a title="Permalink for this page" href="/navperm/{{count_index}}/1"><span class="glyphicon glyphicon-link"></span></a></li> <!-- page permalink -->
+        <li><a title="Permalink for this image" href="/imgperm/{{count_index}}"><span class="glyphicon glyphicon-link"></span><span class="glyphicon glyphicon-picture"></span></a></li> <!-- image permalink -->
         <!--
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-link"></span><span class="caret"></span></a>
@@ -34,11 +34,11 @@
         <!--<li><a href="#" onclick="goRight()">&rsaquo;</a></li>--> <!-- ">" older image -->
         <!--<li><a href="/nav/0">&raquo;</a></li>-->                 <!-- ">>" first (oldest) image -->
 
-        <li><a href="/nav/{{newest_index}}"><span class="glyphicon glyphicon-backward"></span></a></li>  <!-- "<<" newest -->
-        <li><a href="#" onclick="goLeft()"><span class="glyphicon glyphicon-chevron-left"></span></a></li>  <!-- "<" newer image -->
-        <li><a href="/nav/{{random_index}}">?</a></li>        <!-- random image -->
-        <li><a href="#" onclick="goRight()"><span class="glyphicon glyphicon-chevron-right"></span></a></li>  <!-- ">" older image -->
-        <li><a href="/nav/0"><span class="glyphicon glyphicon-forward"></a></li> <!-- ">>" first (oldest) image -->
+        <li><a title="Newest picture" href="/nav/{{newest_index}}"><span class="glyphicon glyphicon-backward"></span></a></li>  <!-- "<<" newest -->
+        <li><a title="Next (newer) picture" href="#" onclick="goLeft()"><span class="glyphicon glyphicon-chevron-left"></span></a></li>  <!-- "<" newer image -->
+        <li><a title="Random picture" href="/nav/{{random_index}}">?</a></li>        <!-- random image -->
+        <li><a title="Prevous (older) picture" href="#" onclick="goRight()"><span class="glyphicon glyphicon-chevron-right"></span></a></li>  <!-- ">" older image -->
+        <li><a title="Earliest (oldest) picture" href="/nav/0"><span class="glyphicon glyphicon-forward"></a></li> <!-- ">>" first (oldest) image -->
 
         <!--
         <li>
@@ -54,20 +54,27 @@
           </form>
         </li>
         -->
-        <li><a href="/timejump/{{current_index}}/2.5"><span  class="glyphicon glyphicon-backward"></span><span class="glyphicon glyphicon-time"></span></a></li> <!-- 2.5 years earlier -->
-        <li><a href="/timejump/{{current_index}}/1.0"><span  class="glyphicon glyphicon-chevron-left"></span><span class="glyphicon glyphicon-time"></span></a></li> <!-- 1 year earlier -->
-        <li><a href="/timejump/{{current_index}}/-1.0"><span class="glyphicon glyphicon-time"></span><span class="glyphicon glyphicon-chevron-right"></span></a></li> <!-- 1 year later -->
-        <li><a href="/timejump/{{current_index}}/-2.5"><span class="glyphicon glyphicon-time"></span><span class="glyphicon glyphicon-forward"></span></a></li> <!-- 2.5 years later -->
+        <li><a title="Time jump 2.5 years later" href="/timejump/{{current_index}}/-2.5"><span class="glyphicon glyphicon-backward"></span><span class="glyphicon glyphicon-time"></span></a></li> <!-- 2.5 years later -->
+        <li><a title="Time jump one year later" href="/timejump/{{current_index}}/-1.0"><span class="glyphicon glyphicon-chevron-left"></span><span class="glyphicon glyphicon-time"></span></a></li> <!-- 1 year later -->
+        <li><a title="Time jump one year earlier" href="/timejump/{{current_index}}/1.0"><span  class="glyphicon glyphicon-time"></span><span class="glyphicon glyphicon-chevron-right"></span></a></li> <!-- 1 year earlier -->
+        <li><a title="Time jump 2.5 years earlier" href="/timejump/{{current_index}}/2.5"><span  class="glyphicon glyphicon-time"></span><span class="glyphicon glyphicon-forward"></span></a></li> <!-- 2.5 years earlier -->
 
-        <li><a href="/carousel">? <span class="glyphicon glyphicon-film"></span></a></li> <!-- random set of pics -->
-        <li><a href="/carousel/{{current_index}}"><span class="glyphicon glyphicon-film"></span></a></li> <!-- the previous 10 pics -->
+        <li><a title="Ten random pictures" href="/carousel">? <span class="glyphicon glyphicon-film"></span></a></li> <!-- random set of pics -->
+        <li><a title="The ten previous pictures" href="/carousel/{{current_index}}"><span class="glyphicon glyphicon-film"></span></a></li> <!-- the previous 10 pics -->
 
-        <li><a href="/same_age"><span class="glyphicon glyphicon-time"></span> =</a></li>
+        <li><a title="Miri and Julia at the same age" href="/same_age"><span class="glyphicon glyphicon-time"></span> =</a></li>
 
         {% if admin_flag %}
-          <li><a href="/showuploadpage"><span class="glyphicon glyphicon-cloud-upload"></span></a></li>
+          <li><a title="Upload new pictures" href="/showuploadpage"><span class="glyphicon glyphicon-cloud-upload"></span></a></li>
         {% endif %}
-        <li><a href="{{url}}">{% if url_linktext == "Login" %} <span class="glyphicon glyphicon-log-in"> {% else %} <span class="glyphicon glyphicon-log-out"> {% endif %}</a></li>
+        <li>
+          {% if url_linktext == "Login" %}
+            <a title="Log in" href="{{url}}"><span class="glyphicon glyphicon-log-in"></span></a>
+          {% else %}
+            <a title="Log out" href="{{url}}"><span class="glyphicon glyphicon-log-out"></span></a>
+          {% endif %}
+        </li>
+
       </ul>
     </div><!--/.nav-collapse -->
   </div>
