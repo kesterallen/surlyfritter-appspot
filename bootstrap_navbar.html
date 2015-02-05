@@ -11,23 +11,34 @@
       </button>
 
       <a class="navbar-brand" href="/">Miriam and Julia Pictures</a>
-
     </div>
+
     <div class="navbar-collapse collapse">
       <ul class="nav navbar-nav navbar-right">
+
+        <li><a href="/navperm/{{count_index}}/1"><span class="glyphicon glyphicon-link"></span></a></li> <!-- page permalink -->
+        <li><a href="/imgperm/{{count_index}}"><span class="glyphicon glyphicon-link"></span><span class="glyphicon glyphicon-picture"></span></a></li> <!-- image permalink -->
+        <!--
         <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown">Permalinks<span class="caret"></span></a>
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-link"></span><span class="caret"></span></a>
+
           <ul class="dropdown-menu" role="menu">
             <li><a href="/navperm/{{count_index}}/1">Whole Page</a></li>
             <li><a href="/imgperm/{{count_index}}">Image only</a></li>
           </ul>
         </li>
+        -->
 
-        <li><a href="/nav/{{newest_index}}">&laquo;</a></li>  <!-- "<<" newest -->
-        <li><a href="#" onclick="goLeft()">&lsaquo;</a></li>  <!-- "<" newer image -->
+        <!--<li><a href="/nav/{{newest_index}}">&laquo;</a></li>-->  <!-- "<<" newest -->
+        <!--<li><a href="#" onclick="goLeft()">&lsaquo;</a></li>-->  <!-- "<" newer image -->
+        <!--<li><a href="#" onclick="goRight()">&rsaquo;</a></li>--> <!-- ">" older image -->
+        <!--<li><a href="/nav/0">&raquo;</a></li>-->                 <!-- ">>" first (oldest) image -->
+
+        <li><a href="/nav/{{newest_index}}"><span class="glyphicon glyphicon-backward"></span></a></li>  <!-- "<<" newest -->
+        <li><a href="#" onclick="goLeft()"><span class="glyphicon glyphicon-chevron-left"></span></a></li>  <!-- "<" newer image -->
         <li><a href="/nav/{{random_index}}">?</a></li>        <!-- random image -->
-        <li><a href="#" onclick="goRight()">&rsaquo;</a></li> <!-- ">" older image -->
-        <li><a href="/nav/0">&raquo;</a></li>                 <!-- ">>" first (oldest) image -->
+        <li><a href="#" onclick="goRight()"><span class="glyphicon glyphicon-chevron-right"></span></a></li>  <!-- ">" older image -->
+        <li><a href="/nav/0"><span class="glyphicon glyphicon-forward"></a></li> <!-- ">>" first (oldest) image -->
 
         <!--
         <li>
@@ -43,47 +54,20 @@
           </form>
         </li>
         -->
-        <li><a href="/timejump/{{current_index}}/2.5">+2.5 yrs</a></li>
-        <li><a href="/timejump/{{current_index}}/1.0">+1 yrs</a></li>
-        <li><a href="/timejump/{{current_index}}/-1.0">-1 yrs</a></li>
-        <li><a href="/timejump/{{current_index}}/-2.5">-2.5 yrs</a></li>
-        <!--
-        <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown">Navigation<span class="caret"></span></a>
-          <ul class="dropdown-menu" role="menu">
-            <li class="dropdown-header">Other Pictures</li>
-            <li><a href="/nav/0">Oldest</a></li>
-            <li><a href="/nav/{{newest_index}}">Newest</a></li>
+        <li><a href="/timejump/{{current_index}}/2.5"><span  class="glyphicon glyphicon-backward"></span><span class="glyphicon glyphicon-time"></span></a></li> <!-- 2.5 years earlier -->
+        <li><a href="/timejump/{{current_index}}/1.0"><span  class="glyphicon glyphicon-chevron-left"></span><span class="glyphicon glyphicon-time"></span></a></li> <!-- 1 year earlier -->
+        <li><a href="/timejump/{{current_index}}/-1.0"><span class="glyphicon glyphicon-time"></span><span class="glyphicon glyphicon-chevron-right"></span></a></li> <!-- 1 year later -->
+        <li><a href="/timejump/{{current_index}}/-2.5"><span class="glyphicon glyphicon-time"></span><span class="glyphicon glyphicon-forward"></span></a></li> <!-- 2.5 years later -->
 
-            <li class="divider"></li>
+        <li><a href="/carousel">? <span class="glyphicon glyphicon-film"></span></a></li> <!-- random set of pics -->
+        <li><a href="/carousel/{{current_index}}"><span class="glyphicon glyphicon-film"></span></a></li> <!-- the previous 10 pics -->
 
-            <li class="dropdown-header">Time Jumps</li>
-            <li><a href="/timejump/{{current_index}}/-2.5">2.5 years earlier</a></li>
-            <li><a href="/timejump/{{current_index}}/-1.0">1 year earlier</a></li>
-            <li><a href="/timejump/{{current_index}}/1.0">1 year later</a></li>
-            <li><a href="/timejump/{{current_index}}/2.5">2.5 years later</a></li>
-          </ul>
-        </li>
-        -->
+        <li><a href="/same_age"><span class="glyphicon glyphicon-time"></span> =</a></li>
 
-        <li><a href="/carousel">Rand Filmstrip</a></li>
-        <li><a href="/carousel/{{current_index}}">Prev Filmstrip</a></li>
-        <!--
-        <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown">Filmstrips<span class="caret"></span></a>
-          <ul class="dropdown-menu" role="menu">
-            <li><a href="/carousel">Random pics</a></li>
-            <li><a href="/carousel/{{current_index}}">Previous Pics</a></li>
-          </ul>
-        </li>
-        -->
-
-        <li><a href="/same_age">Same Age</a></li>
-
-        {% if admin_flag %} 
-          <li><a href="/showuploadpage">Upload</a></li>
+        {% if admin_flag %}
+          <li><a href="/showuploadpage"><span class="glyphicon glyphicon-cloud-upload"></span></a></li>
         {% endif %}
-        <li><a href="{{url}}">{{url_linktext}}</a></li> 
+        <li><a href="{{url}}">{% if url_linktext == "Login" %} <span class="glyphicon glyphicon-log-in"> {% else %} <span class="glyphicon glyphicon-log-out"> {% endif %}</a></li>
       </ul>
     </div><!--/.nav-collapse -->
   </div>
