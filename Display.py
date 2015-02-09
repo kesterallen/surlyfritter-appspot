@@ -44,6 +44,7 @@ MAX_IMAGE_UPLOAD_SIZE = 1000000 #  1 MB
 MAX_TRANSACTION_SIZE = 10000000 # 10 MB
 cn_hpi  = "highestPictureIndex"
 cn_hpi_date = "highestPictureIndexByDate"
+DAYS_IN_YEAR = 365.25
 
 # Functions:
 #
@@ -341,7 +342,7 @@ class TimeJumpHandler(RequestHandlerParent):
 
         logging.info('raw date in get_shifted_date: %s' % start_date)
 
-        timedelta = datetime.timedelta(days=365.25*shift_years)
+        timedelta = datetime.timedelta(days=DAYS_IN_YEAR*shift_years)
         shifted_datetime = str_to_dt(start_date) + timedelta
         return shifted_datetime
 
@@ -480,7 +481,7 @@ class MiriTimeJumpHandler(TimeJumpHandler):
         """Return a datetime.timedelta object of the time between now and cls.birth_date"""
         birthdate = str_to_dt(cls.birth_date)
         timedelta = datetime.datetime.now() - birthdate
-        yearsdelta = float(timedelta.total_seconds())/365.25/3600.0/24.0
+        yearsdelta = float(timedelta.total_seconds())/DAYS_IN_YEAR/3600.0/24.0
         return yearsdelta
 
 class JuliaTimeJumpHandler(MiriTimeJumpHandler):
@@ -492,14 +493,16 @@ class JuliaTimeJumpHandler(MiriTimeJumpHandler):
     birth_date= '2010:04:21 07:30:00'
 
 class SideBySideHandler(RequestHandlerParent):
-    def get(self, index_args='/600/601'):
-        """The index arguments should correspond to PictureIndex.count not
-        PictureIndex.dateOrderIndex."""
+    def get(self, counts_from_request='/600/601'):
+        """
+        The index arguments should be PictureIndex.count values, not
+        PictureIndex.dateOrderIndex.
+        """
 
         m_date = str_to_dt(MiriTimeJumpHandler.birth_date)
         j_date = str_to_dt(JuliaTimeJumpHandler.birth_date)
 
-        count_indices = [int(ia) for ia in index_args.split("/") if ia]
+        count_indices = [int(c) for c in counts_from_request.split("/") if c]
 
         pics = []
         for count_index in count_indices:
@@ -510,8 +513,8 @@ class SideBySideHandler(RequestHandlerParent):
                 pics.append({
                     'picture_index': pi,
                     'date': date,
-                    'miri_age': float((date - m_date).days) / 365.25,
-                    'julia_age': float((date - j_date).days) / 365.25,
+                    'miri_age': float((date - m_date).days) / DAYS_IN_YEAR,
+                    'julia_age': float((date - j_date).days) / DAYS_IN_YEAR,
                 })
             else:
                 logging.info("skipping null picture_index %s" % count_index)
@@ -523,7 +526,8 @@ class SideBySideHandler(RequestHandlerParent):
 
 class SameAgeJumpHandler(TimeJumpHandler):
     def get(self, years_old=None):
-        """ Generate a side-by-side picture of the kids at the same age. A
+        """
+        Generate a side-by-side picture of the kids at the same age. A
         blank 'years_old' arg will generate a random age and display that.
         """
         if years_old is None:
@@ -532,37 +536,17 @@ class SameAgeJumpHandler(TimeJumpHandler):
         else:
             years_old = float(years_old)
 
-        indices = []
-        carousel_slides = []
+        pis = []
         for kid in [MiriTimeJumpHandler, JuliaTimeJumpHandler]:
             dt = self.get_shifted_datetime(kid.birth_date, years_old)
-            index = self.get_index_from_date(dt.strftime("%Y:%m:%d %H:%M:%S"))
+            pi = self.get_index_from_date(dt.strftime("%Y:%m:%d %H:%M:%S"))
             logging.info(
                 'birthday %s, shifted date %s, shift in years %s, index %s' %
-                (kid.birth_date, dt, years_old, index.dateOrderIndex)
+                (kid.birth_date, dt, years_old, pi.dateOrderIndex)
             )
-            indices.append({'index': index, 'date': dt})
+            pis.append(pi)
 
-            carousel_slide = {
-                'index': index.dateOrderIndex,
-                'picture_comments': '',#PictureComment.getCommentsString(index),
-                'tags': [],#Tag.getTagNames(index),
-                'date': '',#get_date_for_slides(index),
-            }
-            carousel_slides.append(carousel_slide)
-
-        logging.info(len(indices))
-        logging.info(indices[0])
-        template_values = {
-            'years_old': years_old,
-            'miri_index': indices[0],
-            'miri_date':  get_date_for_slides(indices[0]['index'].count),
-            'julia_index': indices[1],
-            'julia_date': get_date_for_slides(indices[1]['index'].count),
-            'carousel_slides': carousel_slides,
-        }
-        template_text = render_template_text('same_age.html', template_values)
-        self.writeOutput(template_text)
+        self.redirect('/side_by_side/%s/%s' % (pis[0].count, pis[1].count))
 
 class GetDateOrderString(RequestHandlerParent):
     def get(self):
