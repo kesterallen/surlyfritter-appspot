@@ -45,6 +45,7 @@ MAX_TRANSACTION_SIZE = 10000000 # 10 MB
 cn_hpi  = "highestPictureIndex"
 cn_hpi_date = "highestPictureIndexByDate"
 DAYS_IN_YEAR = 365.25
+SECS_IN_YEAR = DAYS_IN_YEAR * 3600 * 24
 
 # Functions:
 #
@@ -314,8 +315,8 @@ class ImageParent(RequestHandlerParent,
 class TimeJumpHandler(RequestHandlerParent):
 
     def get_index_from_date(self, date_str):
-        """Take an input date string of the form 'YYYY:MM:DD hh:mm:ss' return
-        the dateOrderIndex of the closest PictureIndex before it."""
+        """Take an input date string of the form 'YYYY:MM:DD hh:mm:ss' and
+        return the dateOrderIndex of the closest PictureIndex before it."""
 
         dateparts = re.split('\W+', date_str)
         if len(dateparts) < 4:
@@ -477,12 +478,26 @@ class MiriTimeJumpHandler(TimeJumpHandler):
         self.redirect('/navperm/%d' % shifted_index)
 
     @classmethod
+    def seconds_since_birth(cls):
+        """Return the number of seconds between now and cls.birth_date"""
+        birth_date = str_to_dt(cls.birth_date)
+        timedelta = datetime.datetime.now() - birth_date
+        return float(timedelta.total_seconds())
+
+    @classmethod
     def years_since_birth(cls):
-        """Return a datetime.timedelta object of the time between now and cls.birth_date"""
-        birthdate = str_to_dt(cls.birth_date)
-        timedelta = datetime.datetime.now() - birthdate
-        yearsdelta = float(timedelta.total_seconds())/DAYS_IN_YEAR/3600.0/24.0
+        """Return the float number of years since birth."""
+        yearsdelta = cls.seconds_since_birth / SECS_IN_YEAR
         return yearsdelta
+
+    @classmethod
+    def random_datetime_since_birth(cls):
+        """Return random datetime between now and birth."""
+        rand_secs = random.uniform(0, cls.seconds_since_birth())
+        delta = datetime.timedelta(seconds=rand_secs)
+
+        rand_dt = str_to_dt(cls.birth_date) + delta
+        return rand_dt
 
 class JuliaTimeJumpHandler(MiriTimeJumpHandler):
     """Handles time jump requests of the form /julia_is/<years>, and serves the
@@ -819,7 +834,7 @@ class BlobUploadNewPicture(blobstore_handlers.BlobstoreUploadHandler):
             images_size_sum += upload_file.size
             if images_size_sum > MAX_TRANSACTION_SIZE:
                 msg = ('BlobUploadNewPicture.post: upload(s) is/are '
-                       'too large for the transaction. Skipping %s.' % 
+                       'too large for the transaction. Skipping %s.' %
                        upload_file)
                 logging.info(msg)
                 notification_email(
@@ -1090,37 +1105,40 @@ class NavigatePictures(RequestHandlerParent):
         return prev_index
 
 class FilmstripHandler(ImageParent):
-    def get_indices(self, n_indices, current_index=None):
+    def get_filmstrip_indices(self, num_pics, current_index=None):
+        """
+        Get the PictureIndex.count int values for a filmstrip.
+
+        If current_index is specified, return the num_pics previous pictures
+        (including current_index). If current_index is None, return a random
+        set of pictures, taken from a uniformly-sampled set of timepoints
+        instead of a random set of indices. Random indices, which I had
+        previously, favor times with more pictures in them.
+        """
+
         is_random = (current_index is None)
-
-        hpi = highest_picture_index()
-        if hpi < n_indices:
-            n_indices = hpi
-
         if is_random:
-            maxIndex = hpi
-            indices = range(maxIndex+1)
-            random.shuffle(indices)
-            indices = indices[0:n_indices]
+            tjh = TimeJumpHandler()
+            indices = []
+            for i in range(num_pics):
+                rand_dt = MiriTimeJumpHandler.random_datetime_since_birth()
+                index = tjh.get_index_from_date(str(rand_dt))
+                indices.append(index)
         else:
-            indices = range(current_index-n_indices, current_index+1)
+            indices = range(current_index-num_pics, current_index+1)
             indices.reverse()
 
         return indices
 
-    def get_filmstrip_html(self, current_index, n_indices=20):
-        n_indicesRequest = self.request.get('slidecount')
-        if n_indicesRequest is None or n_indicesRequest == '':
-            pass
-        else:
-            n_indices = int(n_indicesRequest)
+    def get_filmstrip_html(self, current_index, num_pics=20):
+        num_pics_request= self.request.get('slidecount')
+        if num_pics_request:
+            num_pics = int(num_pics_request)
 
-        logging.info("n_indices = %s" % n_indices)
+        logging.info("num_pics = %s" % num_pics)
         pictureIndices = []
-        indices = self.get_indices(n_indices, current_index)
 
-        logging.info("Indices in get_filmstrip_html: %s" % indices)
-        for index in indices:
+        for index in self.get_filmstrip_indices(num_pics, current_index):
             pi = PictureIndex.get(index)
             if pi:
                 logging.info("PictureIndex.get(%d) returns %s" % (index, pi))
@@ -1147,16 +1165,17 @@ class FilmstripHandler(ImageParent):
         self.writeOutput(templateText)
 
 class CarouselHandler(FilmstripHandler):
-    def get(self, index=None, n_indices=10):
+    def get(self, index=None, num_pics=10):
         if index is not None:
             index = int(index)
 
         slides = []
-        for index in self.get_indices(n_indices, index):
-            pi = PictureIndex.get(index, by_date=False)
-            date = get_date_for_slides(index)
-            picture_comments = PictureComment.getCommentsString(index)
-            tags = Tag.getTagNames(index)
+        for fs_index in self.get_filmstrip_indices(num_pics, index):
+            count = fs_index.count
+            pi = PictureIndex.get(count, by_date=False)
+            date = get_date_for_slides(count)
+            picture_comments = PictureComment.getCommentsString(count)
+            tags = Tag.getTagNames(count)
 
             if pi:
                 slides.append({'index': pi.dateOrderIndex,
@@ -1165,8 +1184,8 @@ class CarouselHandler(FilmstripHandler):
                                'tags': tags,})
 
         template_text = render_template_text(
-                            'carousel.html', 
-                            { 
+                            'carousel.html',
+                            {
                                 'current_index': index,
                                 'newest_index': highest_picture_index(),
                                 'carousel_slides': slides
@@ -1342,7 +1361,7 @@ class OrphanHandler(RequestHandlerParent):
         #pictures = Picture.all().fetch(500)#self.FETCH_LIMIT)
         self.orphan_pictures = []
         good_count = 0
-        
+
         count = highest_index_value(cn_hpi , 'count')
         dateOrderIndex = highest_index_by_date()
 
@@ -1376,7 +1395,7 @@ class OrphanHandler(RequestHandlerParent):
         self.orphan_pictures = []
 
         good_count = 0
-        
+
         for picture in pictures:
             if len(self.orphan_pictures) < limit:
                 ref_count = PictureIndex.all(

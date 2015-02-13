@@ -26,7 +26,7 @@
         <li><a title="Prevous (older) picture" href="#" onclick="goRight()"><span class="glyphicon glyphicon-chevron-right"></span></a></li>
         <li><a title="Earliest (oldest) picture" href="/nav/0"><span class="glyphicon glyphicon-forward"></a></li>
 
-        <!-- Jump 2.5yrs forward, 1yr forward, 1yr ealier, 2.5yrs earlier -->
+        <!-- Jump 2.5yrs forward, 1yr forward, same age, 1yr ealier, 2.5yrs earlier -->
         <li><a title="Time jump 2.5 years later" href="/timejump/{{current_index}}/2.5">
               <span class="glyphicon glyphicon-backward"></span>
               <span class="glyphicon glyphicon-time"></span>
@@ -35,6 +35,7 @@
               <span class="glyphicon glyphicon-chevron-left"></span>
               <span class="glyphicon glyphicon-time"></span>
         </a></li>
+        <li><a title="Miri and Julia at the same age" href="/same_age"><span class="glyphicon glyphicon-time"></span> =</a></li>
         <li><a title="Time jump one year earlier" href="/timejump/{{current_index}}/-1.0">
               <span  class="glyphicon glyphicon-time"></span>
               <span class="glyphicon glyphicon-chevron-right"></span>
@@ -47,7 +48,6 @@
         <li><a title="Ten random pictures" href="/carousel">? <span class="glyphicon glyphicon-film"></span></a></li> <!-- random set of pics -->
         <li><a title="The ten previous pictures" href="/carousel/{{count_index}}"><span class="glyphicon glyphicon-film"></span></a></li> <!-- the previous 10 pics -->
 
-        <li><a title="Miri and Julia at the same age" href="/same_age"><span class="glyphicon glyphicon-time"></span> =</a></li>
 
         {% if admin_flag %}
           <li><a title="Upload new pictures" href="/showuploadpage"><span class="glyphicon glyphicon-cloud-upload"></span></a></li>
