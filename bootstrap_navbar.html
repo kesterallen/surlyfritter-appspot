@@ -45,12 +45,19 @@
               <span class="glyphicon glyphicon-forward"></span>
         </a></li>
 
-        <li><a title="Ten random pictures" href="/carousel">? <span class="glyphicon glyphicon-film"></span></a></li> <!-- random set of pics -->
-        <li><a title="The ten previous pictures" href="/carousel/{{count_index}}"><span class="glyphicon glyphicon-film"></span></a></li> <!-- the previous 10 pics -->
+        <li><a title="Ten random pictures" href="/carousel">
+              ? <span class="glyphicon glyphicon-film"></span>
+        </a></li> <!-- random set of pics -->
+        <li><a title="The ten previous pictures" href="/carousel/{{count_index}}">
+              <span class="glyphicon glyphicon-film"></span>
+        </a></li> <!-- the previous 10 pics -->
 
 
         {% if admin_flag %}
-          <li><a title="Upload new pictures" href="/showuploadpage"><span class="glyphicon glyphicon-cloud-upload"></span></a></li>
+          <li><a title="Upload new pictures" href="/showuploadpage"><span class="glyphicon glyphicon-cloud-upload"></span>
+          </a></li>
+          <li><a title="Admin Dashboard" href="https://appengine.google.com/dashboard?&app_id=s~surlyfritter-hrd"><span class="glyphicon glyphicon-cog"></span>
+          </a></li>
         {% endif %}
         <li>
           {% if url_linktext == "Login" %}
