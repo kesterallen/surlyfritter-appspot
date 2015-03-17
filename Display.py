@@ -36,7 +36,8 @@ from DataModels import (Picture, PictureIndex, Greeting, UserFavorite,
 
 DEFAULT_SLIDE_COUNT = 6
 AUTHORIZED_UPLOADERS = ["Kester Allen <kester@gmail.com>",
-                        "Abigail Paske <apaske@gmail.com>", ]
+                        "Abigail Paske <apaske@gmail.com>",
+                        "Abby Paske <apaske@gmail.com>", ]
 NOTIFICATION_SENDER = "Kester Allen <kester@gmail.com>"
 NOTIFICATION_RECEIVER = "kester@gmail.com, apaske@gmail.com"
 BLOBSTORE_UPLOAD_DEFAULT = True
@@ -243,10 +244,12 @@ class RequestHandlerParent(webapp.RequestHandler):
         """
         try:
             self.response.out.write(str(content))
-        except UnicodeEncodeError as uee:
+        except (AssertionError, UnicodeEncodeError) as uee:
             logging.debug(uee)
-            logging.debug("content is %s" % content)
-            logging.debug(content)
+            logging.debug("content is: \n%s" % content)
+            mangled_content = content.encode('ascii', 'ignore')
+            logging.debug("mangled content is: \n%s" % mangled_content)
+            self.response.out.write(mangled_content)
 
     def getIndex(self, indexName, check_bounds=True):
         indexString = self.request.get(indexName)
@@ -487,7 +490,7 @@ class MiriTimeJumpHandler(TimeJumpHandler):
     @classmethod
     def years_since_birth(cls):
         """Return the float number of years since birth."""
-        yearsdelta = cls.seconds_since_birth / SECS_IN_YEAR
+        yearsdelta = cls.seconds_since_birth() / SECS_IN_YEAR
         return yearsdelta
 
     @classmethod
@@ -985,9 +988,9 @@ class NavigatePictures(RequestHandlerParent):
 
             self.writeOutput(template_text)
         except OverQuotaError as oqe:
-            self.writeOutput("The site is over quota, but will reset at "
-                "midnight (Pacific). Please come back after that for more "
-                "pictures of Miri and Julia.")
+            template_text = render_template_text('over_quota.html', {})
+            self.writeOutput(template_text)
+            #self.error(404)
             return
 
     def get_indices_with_index(self, index):
@@ -1454,10 +1457,10 @@ class AdoptOrphanPicturesHandler(OrphanHandler):
 
 class OrphanBlobsHandler(OrphanHandler):
     """Display an orphan blob"""
-    def get(self):
+    def get(self, pic_to_show=0):
         self.get_orphan_blobs()
         random.shuffle(self.orphan_blobs)
-        image = self.orphan_blobs[0].open().read()
+        image = self.orphan_blobs[int(pic_to_show)].open().read()
 
         self.response.headers['Content-Type'] = "image/jpg"
         self.response.out.write(str(image))
@@ -1471,7 +1474,7 @@ class OrphanPicturesHandler(OrphanHandler):
         self.get_orphan_pictures(limit=5)
 
         self.response.headers['Content-Type'] = "image/jpg"
-        picture = self.orphan_pictures[pic_to_show]
+        picture = self.orphan_pictures[int(pic_to_show)]
         self.writeOutput(picture.getImage())
 
         msg = "%d Orphan pics" % (len(self.orphan_pictures))
@@ -1729,6 +1732,10 @@ def main():
                      ('/feeds/.*',                 FeedHandler),
                      ('/_ah/mail/.*',              EmailHandler),
                      ('/orphanblobs',              OrphanBlobsHandler),
+                     ('/orphanblobs/',             OrphanBlobsHandler),
+                     ('/orphanblobs/(.*)',         OrphanBlobsHandler),
+                     ('/orphanpictures',           OrphanPicturesHandler),
+                     ('/orphanpictures/',          OrphanPicturesHandler),
                      ('/orphanpictures/(.*)',      OrphanPicturesHandler),
                      ('/countorphanblobs',         CountOrphanBlobsHandler),
                      ('/countorphanpictures',      CountOrphanPicturesHandler),

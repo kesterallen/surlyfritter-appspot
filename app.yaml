@@ -56,3 +56,4 @@ includes:
 
 builtins:
 - remote_api: on
+- appstats: on

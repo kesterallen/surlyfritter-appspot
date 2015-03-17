@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  {% include "bootstrap_includes.html" %}
+  {% include "cards.html" %}
+  <title>Pictures Page</title>
+</head>
+
+<body role="document">
+  {% include "bootstrap_navbar.html" %} 
+
+
+  <div class="container-fluid">
+
+    <div class="row">
+      <div class="col-lg-4 col-xs-12">
+        <img style="max-height:250px;"
+             class="thumbnail img-responsive"
+                  src="/images/pinata.gif"
+                       alt="oops, no quota!"/>
+      </div>
+      <div class="col-lg-4 col-xs-12">
+        The site is over quota, which means that Kester has probably broken
+        something.  But have no fear!  All will be well at midnight (Pacific)
+        when the quota is reset. Please come back after that for more pictures
+        of Miri and Julia. Here's some nice ones to look at in the meantime:
+      </div>
+      <div class="col-lg-4 col-xs-12">
+        <img style="max-height:250px;"
+             class="thumbnail img-responsive"
+             src="/images/pinata2.gif"
+             alt="oops, no quota!"/>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-6 col-xs-12">
+        <img class="img-responsive"
+             src="/images/both.jpg"
+             alt="oops, no quota!"
+        />
+      </div>
+      <div class="col-lg-6 col-xs-12">
+        <img class="img-responsive"
+             src="/images/julia_mfs_2015.jpg"
+             alt="oops, no quota!"
+        />
+      </div>
+    </div>
+
+  </div>
+
+  {% include "footer.html" %}
+</body>
+</html>
