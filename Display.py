@@ -1422,10 +1422,16 @@ class DeleteOrphanBlobsHandler(OrphanHandler):
 class CountOrphanBlobsHandler(OrphanHandler):
     """Display which blobs are orphans"""
     def get(self):
-        self.get_orphan_blobs()
-        msg = "%d Orphan blobs" % (len(self.orphan_blobs))
-        logging.info(msg)
-        self.writeOutput(msg)
+        try:
+            self.get_orphan_blobs()
+            msg = "%d Orphan blobs" % (len(self.orphan_blobs))
+            logging.info(msg)
+            self.writeOutput(msg)
+        except DeadlineExceededError as dee:
+            self.writeOutput(
+                "Deadline Exceeded: %s orphan blobs found so far." %
+                (len(self.orphan_blobs)))
+            return
 
 class CountOrphanPicturesHandler(OrphanHandler):
     """Display which Picture entities are orphans"""
@@ -1739,8 +1745,6 @@ def main():
                      ('/orphanpictures/(.*)',      OrphanPicturesHandler),
                      ('/countorphanblobs',         CountOrphanBlobsHandler),
                      ('/countorphanpictures',      CountOrphanPicturesHandler),
-                     ('/countorphanpictures/',     CountOrphanPicturesHandler),
-                     ('/countorphanpictures/(.*)', CountOrphanPicturesHandler),
                      ('/adoptorphanpictures/(.*)', AdoptOrphanPicturesHandler),
                      ('/deleteorphanblobs',        DeleteOrphanBlobsHandler),
                      ('/meta',                     MetaDataHandler),
