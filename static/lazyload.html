@@ -1,9 +1,14 @@
-<!-- Standard includes -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <!-- Standard includes -->
 <script src="/static/jquery-2.1.1.min.js"></script>
 <link rel="stylesheet" href="/static/bootstrap-3.2.0/dist/css/bootstrap.min.css">
 <link rel="stylesheet" href="/static/bootstrap-3.2.0/dist/css/bootstrap-theme.min.css">
 <script src="/static/bootstrap-3.2.0/dist/js/bootstrap.min.js"></script>
 <script src="/static/lazysizes.min.js"></script>
+<!--<script src="https://cdn.rawgit.com/aFarkas/lazysizes/gh-pages/lazysizes.min.js"></script>-->
 
 <!-- CSS to center the image in the carousel, increase slide speed, and limit the height -->
 <style type="text/css"> 
@@ -24,11 +29,11 @@ first carousel item link to the previous set of slides.  -->
   function goLeft() {
     var $is_slide_first = $('.carousel-inner .item:first').hasClass('active');
     var $is_pic_newest = false;
-    {% if current_index %}
-      {% if newest_index %}
-        $is_pic_newest = {{current_index}} >= {{newest_index}};
-      {% endif %}
-    {% endif %}
+    
+      
+        $is_pic_newest = 9 >= 9;
+      
+    
     var $disable_left_arrow_button = $is_slide_first && $is_pic_newest;
     if ($disable_left_arrow_button) {
       ; // no action on left arrow keypress
@@ -56,10 +61,10 @@ first carousel item link to the previous set of slides.  -->
           $this.children('.right.carousel-control').show();
         } 
     }
-    if ($next_index >= {{newest_index}}) {
-        $next_index = {{newest_index}};
+    if ($next_index >= 9) {
+        $next_index = 9;
         if ($('.carousel-inner .item:first').hasClass('active') && 
-            {{current_index}} >= {{newest_index}})
+            9 >= 9)
         {
           $this.children('.left.carousel-control').hide();
         } else if($('.carousel-inner .item:last').hasClass('active')) {
@@ -74,7 +79,7 @@ first carousel item link to the previous set of slides.  -->
     var $this = $('#myCarousel');
 
     // Single slide case
-    if ({{carousel_slides|length}} == 1) {
+    if (6 == 1) {
       $this.children('.left.carousel-control').attr("href", "/nav/" + $next_index);
       $this.children('.right.carousel-control').attr("href", "/nav/" + $prev_index);
     // Multiple slides case-- first slide in carousel
@@ -93,8 +98,8 @@ first carousel item link to the previous set of slides.  -->
   }
 
   function checkItem() {
-    var $prev_index = {{current_index}} - {{carousel_slides|length}}
-    var $next_index = {{current_index}} + {{carousel_slides|length}}
+    var $prev_index = 9 - 6
+    var $next_index = 9 + 6
     checkBounds($prev_index, $next_index);
     setLinks($prev_index, $next_index);
   }
@@ -125,3 +130,113 @@ first carousel item link to the previous set of slides.  -->
 
 <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
 <link rel="alternate" type="application/rss+xml" title="RSS" href="/feeds/feed.xml"/>
+
+  
+<!-- Twitter card -->
+<meta name="twitter:card"        content="photo"/>
+<meta name="twitter:site"        content="@kesterallen"/>
+<meta name="twitter:creator"     content="@kesterallen"/>
+<meta name="twitter:url"         content="http://surlyfritter.appspot.com/navperm/9"/>
+<meta name="twitter:title"       content=""/>
+<meta name="twitter:description" content="(&#39;&#39;,)"/>
+<meta name="twitter:image"       content="http://surlyfritter.appspot.com/imgperm/9"/>
+
+<!-- Facebook preview-->
+<meta property="og:title"        content=""/> 
+<meta property="og:description"  content="(&#39;&#39;,)"/> 
+<meta property="og:type"         content="blog"/> 
+<meta property="og:image"        content="http://surlyfritter.appspot.com/imgperm/9"/>
+<meta property="og:url"          content="http://surlyfritter.appspot.com/navperm/9"/>
+<meta property="og:site_name"    content="Pictures of Miri, Julia, and Linux"/> 
+<meta property="fb:admins"       content="kesterallen"/> 
+
+  <title>Pictures Page</title>
+</head>
+
+<body role="document">
+  <div class="navbar navbar-default" role="navigation">
+  <div class="container-fluid">
+
+    <div class="navbar-header">
+
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+
+      <a class="navbar-brand" href="/">Lazy Load Test: Miriam, Julia, and Linus Pictures</a>
+    </div>
+
+    <div class="navbar-collapse collapse">
+    </div><!--/.nav-collapse -->
+  </div>
+</div>
+ 
+
+  <div class="container">
+    <!-- Carousel ================================================== -->
+<div id="myCarousel" class="carousel slide" data-ride="carousel" data-interval=false data-wrap=false>
+  <!-- Indicators -->
+  
+    <ol class="carousel-indicators">
+        
+            <li data-target="#myCarousel" data-slide-to="0" class="active" > </li> 
+            <li data-target="#myCarousel" data-slide-to="1" > </li> 
+            <li data-target="#myCarousel" data-slide-to="2" > </li> 
+            <li data-target="#myCarousel" data-slide-to="3" > </li> 
+            <li data-target="#myCarousel" data-slide-to="4" > </li> 
+            <li data-target="#myCarousel" data-slide-to="5" > </li> 
+    </ol>
+
+  <div class="carousel-inner">
+      <div class="item active " >
+         <a href="/nav/9/1"> <img src="/static/images/lowres.jpg" class="lazyload" data-src="/img/9" alt=""> </a> 
+      </div>
+    
+      <div class="item " > 
+         <a href="/nav/8/1"> <img src="/static/images/lowres.jpg" class="lazyload" data-src="/img/8" alt=""> </a> 
+      </div>
+    
+      <div class="item " >
+         <a href="/nav/7/1"> <img src="/static/images/lowres.jpg" class="lazyload" data-src="/img/7" alt=""> </a> 
+      </div>
+    
+      <div class="item " >
+         <a href="/nav/6/1"> <img src="/static/images/lowres.jpg" class="lazyload" data-src="/img/6" alt=""> </a> 
+      </div>
+    
+      <div class="item " >
+         <a href="/nav/5/1"> <img src="/static/images/lowres.jpg" class="lazyload" data-src="/img/5" alt=""> </a> 
+      </div>
+    
+      <div class="item " >
+         <a href="/nav/4/1"> <img src="/static/images/lowres.jpg" class="lazyload" data-src="/img/4" alt=""> </a> 
+      </div>
+    
+  </div>
+  
+    <a class="left carousel-control" href="#myCarousel" role="button" data-slide="prev">
+      <span class="glyphicon glyphicon-chevron-left"></span>
+    </a>
+    <a class="right carousel-control" href="#myCarousel" role="button" data-slide="next">
+      <span class="glyphicon glyphicon-chevron-right"></span>
+    </a>
+  
+</div><!-- /carousel -->
+
+
+    
+
+  </div> <!-- /container -->
+
+  <div><div class="panel panel-default">
+  <div class="panel-body">
+    
+  </div>
+</div>
+</div>
+
+</body>
+</html>
