@@ -29,7 +29,7 @@
       >
 
         {% if carousel_slides|length > 1 %} <a href="/nav/{{carousel_slide.index}}/1"> {% endif %}
-        <img class="lazyload" src="/static/images/lowres.jpg" data-src="/img/{{carousel_slide.index}}" alt="{{carousel_slide.picture_comments}}">
+        <img class="lazyload" src="/static/images/loader.gif" data-src="/img/{{carousel_slide.index}}" alt="{{carousel_slide.picture_comments}}">
         {% if carousel_slides|length > 1 %} </a> {% endif %}
 
         <div class="container">

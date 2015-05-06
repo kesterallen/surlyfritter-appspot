@@ -147,6 +147,9 @@ def add_picture(image, name, isBlobstore=BLOBSTORE_UPLOAD_DEFAULT):
     else:
         image_size = len(image)
 
+    logging.info('Display.add_picture: image size for %s is %s .' % 
+        (name, image_size))
+
     if image_size > MAX_IMAGE_UPLOAD_SIZE:
         msg = 'Display.add_picture: image "%s" is too large. Skipping.' % name
         logging.info(msg)
@@ -510,6 +513,14 @@ class JuliaTimeJumpHandler(MiriTimeJumpHandler):
     """
     birth_date= '2010:04:21 07:30:00'
 
+class LinusTimeJumpHandler(MiriTimeJumpHandler):
+    """Handles time jump requests of the form /julia_is/<years>, and serves the
+    picture at which Linusis <years> old.
+
+    Inherits get and post from MiriTimeJumpHandler
+    """
+    birth_date= '2015:04:17 07:30:00'
+
 class SideBySideHandler(RequestHandlerParent):
     def get(self, counts_from_request='/600/601'):
         """
@@ -519,6 +530,7 @@ class SideBySideHandler(RequestHandlerParent):
 
         m_date = str_to_dt(MiriTimeJumpHandler.birth_date)
         j_date = str_to_dt(JuliaTimeJumpHandler.birth_date)
+        l_date = str_to_dt(LinusTimeJumpHandler.birth_date)
 
         count_indices = [int(c) for c in counts_from_request.split("/") if c]
 
@@ -533,6 +545,7 @@ class SideBySideHandler(RequestHandlerParent):
                     'date': date,
                     'miri_age': float((date - m_date).days) / DAYS_IN_YEAR,
                     'julia_age': float((date - j_date).days) / DAYS_IN_YEAR,
+                    'linus_age': float((date - l_date).days) / DAYS_IN_YEAR,
                 })
             else:
                 logging.info("skipping null picture_index %s" % count_index)
@@ -555,7 +568,7 @@ class SameAgeJumpHandler(TimeJumpHandler):
             years_old = float(years_old)
 
         pis = []
-        for kid in [MiriTimeJumpHandler, JuliaTimeJumpHandler]:
+        for kid in [MiriTimeJumpHandler, JuliaTimeJumpHandler, LinusTimeJumpHandler]:
             dt = self.get_shifted_datetime(kid.birth_date, years_old)
             pi = self.get_index_from_date(dt.strftime("%Y:%m:%d %H:%M:%S"))
             logging.info(
@@ -564,7 +577,9 @@ class SameAgeJumpHandler(TimeJumpHandler):
             )
             pis.append(pi)
 
-        self.redirect('/side_by_side/%s/%s' % (pis[0].count, pis[1].count))
+        self.redirect('/side_by_side/%s/%s/%s' % (pis[0].count, 
+                                                  pis[1].count,
+                                                  pis[2].count))
 
 class GetDateOrderString(RequestHandlerParent):
     def get(self):
@@ -953,6 +968,7 @@ class NavigatePictures(RequestHandlerParent):
                     }
                     carousel_slides.append(carousel_slide)
                 tagNamesForCount = Tag.getTagNames(count)
+                logging.debug("tagNamesForCount: '%s'" % tagNamesForCount)
                 tagsStringForCount = Tag.getTagsString(count),
                 template_values = {
                     'admin_flag':          admin_flag,
@@ -1689,6 +1705,10 @@ def main():
                      ('/julia_is',            JuliaTimeJumpHandler),
                      ('/julia_is/',           JuliaTimeJumpHandler),
                      ('/julia_is/(.*)',       JuliaTimeJumpHandler),
+                     ('/linus_is',            LinusTimeJumpHandler),
+                     ('/linus_is/',           LinusTimeJumpHandler),
+                     ('/linus_is/(.*)',       LinusTimeJumpHandler),
+                     ('/same_age',            SameAgeJumpHandler),
                      ('/same_age',            SameAgeJumpHandler),
                      ('/same_age/',           SameAgeJumpHandler),
                      ('/same_age/(.*)',       SameAgeJumpHandler),

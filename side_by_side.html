@@ -12,7 +12,10 @@
   <div class="row">
     {% for pic in pics %}
       <div class="col-lg-6 col-md-6 col-sm-12 col-xm-12">
-        <strong>{{pic.date}}: Miri is {{pic.miri_age|floatformat:1}}, Julia is {{pic.julia_age|floatformat:1}}.</strong>
+        <strong>{{pic.date}}: Miri is {{pic.miri_age|floatformat:1}}, 
+                              Julia is {{pic.julia_age|floatformat:1}},
+                              Linus is {{pic.linus_age|floatformat:1}}.
+        </strong>
         <a href="/navperm/{{pic.picture_index.count}}">
           <img src="/imgperm/{{pic.picture_index.count}}" class="thumbnail img-responsive"/>
         </a>
