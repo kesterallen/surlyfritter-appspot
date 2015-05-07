@@ -3,6 +3,8 @@ import datetime
 import re
 import math
 import EXIF
+from PIL import Image
+from PIL.ExifTags import TAGS
 import logging
 import StringIO
 from pprint import pformat
@@ -12,7 +14,9 @@ from google.appengine.api import memcache
 from google.appengine.api import users
 from google.appengine.ext import db
 from google.appengine.ext import blobstore
-from google.appengine.ext.webapp.mail_handlers import InboundMailHandler
+
+PIL_EXIF_TAG_KEY_DATETIME = 306
+PIL_EXIF_TAG_KEY_ORIENTATION = 274
 
 # TODO: Memcache name generation:
 #
@@ -124,36 +128,29 @@ class Picture(db.Model):
         #TODO: use the exiv data to resize the images to a consistent max size (1200?)?
         if self.picture is not None:
             image = self.picture
-            #img = self.picture
-            #img.resize(width=75, height=75)
-            #img.im_feeling_lucky()
-            #image = img.execute_transforms(output_encoding=images.JPEG)
-
             logging.debug("getRotatedImage: image is from self.picture")
         elif self.blobStorePictureKey is not None:
             blob_reader = blobstore.BlobReader(self.blobStorePictureKey)
             image = blob_reader.read()
-            #img = images.Image(blob_key=self.blobStorePictureKey)
-            #img.resize(width=75, height=75)
-            #img.im_feeling_lucky()
-            #image = img.execute_transforms(output_encoding=images.JPEG)
-
             logging.debug("getRotatedImage: image is a blobstore image")
         else:
             logging.debug("getRotatedImage: NO IMAGE")
 
         exivTags = self.getExivTags(image)
 
+        # TODO: rewrite with PIL and Orientation / PIL_EXIF_TAG_KEY_ORIENTATION
+        #exif_data = img._getexif()
+
         if "Image Orientation" in exivTags:
             logging.debug("image orientation is in exivTags")
             orientation = str(exivTags["Image Orientation"])
             logging.debug("orientation in exivTags is: %s" % orientation)
 
-            if orientation == "Rotated 180":
+            if orientation == "Rotated 180": # 3
                 image = images.rotate(image, 180, images.JPEG)
-            elif orientation == "Rotated 90 CW":
+            elif orientation == "Rotated 90 CW": # 6
                 image = images.rotate(image, 90, images.JPEG)
-            elif orientation == "Rotated 90 CCW":
+            elif orientation == "Rotated 90 CCW": # 8
                 image = images.rotate(image, 270, images.JPEG)
             else:
                 logging.debug(
@@ -184,6 +181,7 @@ class Picture(db.Model):
         return image
 
     def getDateRaw(self):
+        # TODO: rewrite with PIL DateTime/ PIL_EXIF_TAG_KEY_DATETIME
         exivTags = self.getExivTags()
         if 'Image DateTime' in exivTags:
             imageTime = str(exivTags['Image DateTime'])
@@ -203,6 +201,7 @@ class Picture(db.Model):
         return imageTime
 
     def isExivDate(self):
+        # TODO: rewrite with PIL DateTime/ 306
         exivTags = self.getExivTags()
         return 'Image DateTime' in exivTags
 
@@ -357,27 +356,34 @@ class UniqueTagName(db.Model):
 
     @classmethod
     def updateTagCounts(cls):
-        for tag in UniqueTagName.all():
-            count = Tag.all().filter('name_ref', tag).count()
-            tag.tag_count = count
-            tag.put()
+        for unique_tag_name in UniqueTagName.all():
+            count = Tag.all().filter('name_ref', unique_tag_name).count()
+            unique_tag_name.tag_count = count
+            unique_tag_name.put()
 
-    @classmethod
-    def getCloudTags(cls):
-        tags_out = []
-        for tag in UniqueTagName.all():
-            tags_out.append({
-                'fontsize': 5.0 * (2.0 + math.log(tag.tag_count)),
-                'name': tag.name,
-                'count': tag.tag_count,
-            })
-        return tags_out
+#    @classmethod
+#    def getCloudTags(cls):
+#        tags_out = []
+#        fontsizes = [10, 15, 20, 25, 30, 35]
+#        for unique_tag_name in UniqueTagName.all():
+#
+#            fontindex = unique_tag_name.tag_count / 20
+#            if fontindex >= 6:
+#                fontindex = 5
+#            fontsize = fontsizes[fontindex]
+#
+#            tags_out.append({
+#                'fontsize': fontsize, #5.0 * (2.0 + math.log(unique_tag_name.tag_count)),
+#                'name': unique_tag_name.name,
+#                'count': unique_tag_name.tag_count,
+#            })
+#        return tags_out
 
     @classmethod
     def getTagCounts(cls):
         counts = {}
-        for tag in UniqueTagName.all():
-            counts[str(tag.name)] = tag.tag_count
+        for unique_tag_name in UniqueTagName.all():
+            counts[str(unique_tag_name.name)] = tag.tag_count
         return counts
 
 class Tag(db.Model):

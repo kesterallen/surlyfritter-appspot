@@ -2,10 +2,8 @@ from __future__ import with_statement
 
 import cgi
 import datetime
-import EXIF
 import json
 import logging
-import math
 import os
 import random
 import re
@@ -904,10 +902,14 @@ class NavigatePictures(RequestHandlerParent):
         logging.info("is_carousel_back is %s" % is_carousel_back)
 
         try:
+            # Bail out if there are no pics:
+            #
             if highest_picture_index() < 0:
                 self.writeOutput("no pictures!")
                 return
 
+            #Determine login and admin status:
+            #
             admin_flag = False
             user = users.get_current_user()
             if user:
@@ -946,25 +948,26 @@ class NavigatePictures(RequestHandlerParent):
                 # a vanilla list from the Query object returned by .all(),
                 # and giving them a logorithmic font size for the tag cloud
                 #
-                tags = UniqueTagName.getCloudTags()
-                random.shuffle(tags)
+                unique_tags = UniqueTagName.all()
+                #random.shuffle(unique_tags)
 
                 #greetings = Greeting.all().order('-date'),
 
                 prev_index = self.get_prev_index(index)
                 newest_index = highest_picture_index()
                 carousel_slides = []
-                for i in range(num_slides):
-                    slide_date_order_index = dateOrderIndex - i
+                for islide in range(num_slides):
+                    slide_date_order_index = dateOrderIndex - islide
                     if slide_date_order_index < 0:
                         slide_date_order_index = 0
-                    slide_count = PictureIndex.dateOrderIndexToCount(slide_date_order_index)
+                    pi = PictureIndex.all().filter(
+                             'dateOrderIndex', slide_date_order_index).get()
 
                     carousel_slide = {
                         'index': slide_date_order_index,
-                        'picture_comments': PictureComment.getCommentsString(slide_count),
-                        'tags': Tag.getTagNames(slide_count),
-                        'date': get_date_for_slides(slide_count),
+                        'picture_comments': PictureComment.getCommentsString(pi.count),
+                        'tags': Tag.getTagNames(pi.count),
+                        'date': str_to_dt(pi.dateOrderString)
                     }
                     carousel_slides.append(carousel_slide)
                 tagNamesForCount = Tag.getTagNames(count)
@@ -981,12 +984,12 @@ class NavigatePictures(RequestHandlerParent):
                     'picture_comments':    PictureComment.getCommentsString(count),
                     'slideshow_flag':      self.request.get('slideshow_flag'),
                     'slideshow_frequency': self.request.get('slideshow_frequency'),
-                    'tags':                tags,
+                    'tags':                unique_tags,
                     'url_linktext':        url_linktext,
                     'url':                 url,
                     'user':                user,
                     'welcome_text':        welcome_text,
-                    'thedate':             get_date_for_slides(count),
+                    'thedate':             carousel_slides[0].date,
                     'thetags':             tagNamesForCount,
                     'picture_tags':        tagsStringForCount,
                     'blob_upload_url':     blobstore.create_upload_url('/blobupload'),
@@ -1306,12 +1309,8 @@ class TagCloudHandler(RequestHandlerParent):
         #    output.append("%s: %s<br>" % (name, tag_counts[name]))
         #self.writeOutput("".join(output))
 
-        tags = UniqueTagName.getCloudTags()
-
-        is_sorted = self.request.get('is_sorted')
-        if is_sorted:
-            tags = sorted(tags, key=lambda t: t.count)
-
+        tags = UniqueTagName.all()
+        logging.debug(tags)
         text = render_template_text('tag_cloud.html', {'tags': tags})
         self.writeOutput(text)
 
@@ -1674,7 +1673,7 @@ class NotFoundPageHandler(webapp.RequestHandler):
         self.error(404)
         self.response.out.write('Page Not Found! <a href="/">Front page</a>')
 
-def main():
+def real_main():
     application = webapp.WSGIApplication(
                     [
                      ('/nav',                 NavigatePictures),
@@ -1776,5 +1775,20 @@ def main():
                     debug=True)
     wsgiref.handlers.CGIHandler().run(application)
 
+def profile_main():
+    # This is the main function for profiling
+    # We've renamed our original main() above to real_main()
+    import cProfile, pstats
+    prof = cProfile.Profile()
+    prof = prof.runctx("real_main()", globals(), locals())
+    print "<pre>"
+    stats = pstats.Stats(prof)
+    stats.sort_stats("cumulative")  # Or cumulative
+    stats.print_stats(80)  # 80 = how many to print
+    # The rest is optional.
+    stats.print_callees()
+    stats.print_callers()
+    print "</pre>"
+
 if __name__ == "__main__":
-    main()
+    real_main()
