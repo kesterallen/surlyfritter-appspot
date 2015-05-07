@@ -1,9 +1,9 @@
 <div class="panel panel-default">
   <div class="panel-body">
     {% for tag in tags %} 
-      <!--<span style="font-size:{{tag.fontsize}}px">-->
+      <span style="font-size:{{tag.fontsize}}px">
         <a href="/tag/{{tag.name}}">{{tag.name}}</a>
-      <!--</span>-->
+      </span>
     {% endfor %}
   </div>
 </div>

@@ -3,8 +3,8 @@ import datetime
 import re
 import math
 import EXIF
-from PIL import Image
-from PIL.ExifTags import TAGS
+#from PIL import Image
+#from PIL.ExifTags import TAGS
 import logging
 import StringIO
 from pprint import pformat
@@ -361,24 +361,6 @@ class UniqueTagName(db.Model):
             unique_tag_name.tag_count = count
             unique_tag_name.put()
 
-#    @classmethod
-#    def getCloudTags(cls):
-#        tags_out = []
-#        fontsizes = [10, 15, 20, 25, 30, 35]
-#        for unique_tag_name in UniqueTagName.all():
-#
-#            fontindex = unique_tag_name.tag_count / 20
-#            if fontindex >= 6:
-#                fontindex = 5
-#            fontsize = fontsizes[fontindex]
-#
-#            tags_out.append({
-#                'fontsize': fontsize, #5.0 * (2.0 + math.log(unique_tag_name.tag_count)),
-#                'name': unique_tag_name.name,
-#                'count': unique_tag_name.tag_count,
-#            })
-#        return tags_out
-
     @classmethod
     def getTagCounts(cls):
         counts = {}
@@ -436,7 +418,4 @@ class Tag(db.Model):
             displayTagText = ' '.join(tag_names)
         else:
             displayTagText = ''
-
-        logging.info("displayTagText for index %s is %s" % 
-                     (index, displayTagText))
         return displayTagText

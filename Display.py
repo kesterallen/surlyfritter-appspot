@@ -963,16 +963,24 @@ class NavigatePictures(RequestHandlerParent):
                     pi = PictureIndex.all().filter(
                              'dateOrderIndex', slide_date_order_index).get()
 
+                    if pi:
+                        count = pi.count
+                        date_order_string = pi.dateOrderString
+                    else:
+                        count = 0
+                        date_order_string = '1999:01:01'
                     carousel_slide = {
                         'index': slide_date_order_index,
-                        'picture_comments': PictureComment.getCommentsString(pi.count),
-                        'tags': Tag.getTagNames(pi.count),
-                        'date': str_to_dt(pi.dateOrderString)
+                        'picture_comments': PictureComment.getCommentsString(count),
+                        'tags': Tag.getTagNames(count),
+                        'date': str_to_dt(date_order_string),
                     }
                     carousel_slides.append(carousel_slide)
                 tagNamesForCount = Tag.getTagNames(count)
-                logging.debug("tagNamesForCount: '%s'" % tagNamesForCount)
-                tagsStringForCount = Tag.getTagsString(count),
+                tagsStringForCount = Tag.getTagsString(count)
+                logging.debug(
+                    "tagNamesForCount: '%s', tagsStringForCount: '%s'" % (
+                    tagNamesForCount, tagsStringForCount))
                 template_values = {
                     'admin_flag':          admin_flag,
                     'count_index':         count,
@@ -989,7 +997,7 @@ class NavigatePictures(RequestHandlerParent):
                     'url':                 url,
                     'user':                user,
                     'welcome_text':        welcome_text,
-                    'thedate':             carousel_slides[0].date,
+                    'thedate':             carousel_slides[0]['date'],
                     'thetags':             tagNamesForCount,
                     'picture_tags':        tagsStringForCount,
                     'blob_upload_url':     blobstore.create_upload_url('/blobupload'),
@@ -1302,16 +1310,17 @@ class UpdateTagCountsHandler(RequestHandlerParent):
 
 class TagCloudHandler(RequestHandlerParent):
     def get(self):
-        #tag_counts = UniqueTagName.getTagCounts()
-        #names_in_count_order = sorted(tag_counts, key=tag_counts.get)
-        #output = []
-        #for name in names_in_count_order:
-        #    output.append("%s: %s<br>" % (name, tag_counts[name]))
-        #self.writeOutput("".join(output))
-
-        tags = UniqueTagName.all()
-        logging.debug(tags)
-        text = render_template_text('tag_cloud.html', {'tags': tags})
+        unique_tags = []
+        for utn in UniqueTagName.all():
+            tag = {'name': utn.name, 'fontsize': 10.0} #math.log(utn.tag_count)
+            if utn.tag_count > 80:
+                tag['fontsize'] = 30.0
+            elif utn.tag_count > 50:
+                tag['fontsize'] = 20.0
+            elif utn.tag_count > 20:
+                tag['fontsize'] = 15.0
+            unique_tags.append(tag)
+        text = render_template_text('tag_cloud.html', {'tags': unique_tags})
         self.writeOutput(text)
 
 class TagsByIndexHandler(RequestHandlerParent):
