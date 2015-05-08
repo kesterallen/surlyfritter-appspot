@@ -948,7 +948,7 @@ class NavigatePictures(RequestHandlerParent):
                 # a vanilla list from the Query object returned by .all(),
                 # and giving them a logorithmic font size for the tag cloud
                 #
-                unique_tags = UniqueTagName.all()
+                unique_tags = TagCloudHandler.get_cloud_tags()
                 #random.shuffle(unique_tags)
 
                 #greetings = Greeting.all().order('-date'),
@@ -1309,7 +1309,8 @@ class UpdateTagCountsHandler(RequestHandlerParent):
         self.writeOutput(pformat(tag_counts))
 
 class TagCloudHandler(RequestHandlerParent):
-    def get(self):
+    @classmethod
+    def get_cloud_tags(cls):
         unique_tags = []
         for utn in UniqueTagName.all():
             tag = {'name': utn.name, 'fontsize': 10.0} #math.log(utn.tag_count)
@@ -1320,6 +1321,10 @@ class TagCloudHandler(RequestHandlerParent):
             elif utn.tag_count > 20:
                 tag['fontsize'] = 15.0
             unique_tags.append(tag)
+        return unique_tags
+
+    def get(self):
+        unique_tags = TagCloudHandler.get_cloud_tags()
         text = render_template_text('tag_cloud.html', {'tags': unique_tags})
         self.writeOutput(text)
 
