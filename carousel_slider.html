@@ -32,7 +32,7 @@
         {% if forloop.counter0 == 0 %}
           <img src="/img/{{carousel_slide.index}}" alt="{{carousel_slide.picture_comments}}">
         {% else %}
-          <img class="lazyload" src="/images/loader.gif" data-src="/img/{{carousel_slide.index}}" alt="{{carousel_slide.picture_comments}}">
+          <img class="lazyload" src="/images/loader.gif" height=250 data-src="/img/{{carousel_slide.index}}" alt="{{carousel_slide.picture_comments}}">
         {% endif %}
         {% if carousel_slides|length > 1 %} </a> {% endif %}
 
