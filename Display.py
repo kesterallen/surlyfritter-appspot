@@ -944,12 +944,7 @@ class NavigatePictures(RequestHandlerParent):
             template_text = None#memcache.get(memcache_name) # Turn off memcache
             if template_text is None:
 
-                # Get the UniqueTagName to display, breaking them out into
-                # a vanilla list from the Query object returned by .all(),
-                # and giving them a logorithmic font size for the tag cloud
-                #
                 unique_tags = TagCloudHandler.get_cloud_tags()
-                #random.shuffle(unique_tags)
 
                 #greetings = Greeting.all().order('-date'),
 
@@ -957,12 +952,11 @@ class NavigatePictures(RequestHandlerParent):
                 newest_index = highest_picture_index()
                 carousel_slides = []
                 for islide in range(num_slides):
-                    slide_date_order_index = dateOrderIndex - islide
-                    if slide_date_order_index < 0:
-                        slide_date_order_index = 0
-                    pi = PictureIndex.all().filter(
-                             'dateOrderIndex', slide_date_order_index).get()
-
+                    slide_doi = dateOrderIndex - islide
+                    if slide_doi < 0:
+                        slide_doi = 0
+                    pi = PictureIndex.all(
+                             ).filter('dateOrderIndex', slide_doi).get()
                     if pi:
                         count = pi.count
                         date_order_string = pi.dateOrderString
@@ -970,7 +964,7 @@ class NavigatePictures(RequestHandlerParent):
                         count = 0
                         date_order_string = '1999:01:01'
                     carousel_slide = {
-                        'index': slide_date_order_index,
+                        'index': slide_doi,
                         'picture_comments': PictureComment.getCommentsString(count),
                         'tags': Tag.getTagNames(count),
                         'date': str_to_dt(date_order_string),
@@ -1310,17 +1304,36 @@ class UpdateTagCountsHandler(RequestHandlerParent):
 
 class TagCloudHandler(RequestHandlerParent):
     @classmethod
-    def get_cloud_tags(cls):
+    def get_cloud_tags(cls, shuffle=True):
+        """ Get the UniqueTagName to display, breaking them out into a vanilla
+        list from the Query object returned by .all(), and giving them a
+        logorithmic font size for the tag cloud.
+
+        Note that an actual math.log call was too expensive for the hundreds of
+        tags.
+        """
         unique_tags = []
         for utn in UniqueTagName.all():
-            tag = {'name': utn.name, 'fontsize': 10.0} #math.log(utn.tag_count)
-            if utn.tag_count > 80:
-                tag['fontsize'] = 30.0
-            elif utn.tag_count > 50:
-                tag['fontsize'] = 20.0
-            elif utn.tag_count > 20:
-                tag['fontsize'] = 15.0
+            tag = {'name': utn.name }
+            if utn.tag_count < 5:
+                fontsize = 10
+            elif utn.tag_count < 10:
+                fontsize = 13
+            elif utn.tag_count < 20:
+                fontsize = 16
+            elif utn.tag_count < 40:
+                fontsize = 19
+            elif utn.tag_count < 120:
+                fontsize = 22
+            else:
+                fontsize = 25
+
+            tag['fontsize'] = fontsize
             unique_tags.append(tag)
+
+        if shuffle:
+            random.shuffle(unique_tags)
+
         return unique_tags
 
     def get(self):
