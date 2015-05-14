@@ -1312,27 +1312,23 @@ class TagCloudHandler(RequestHandlerParent):
         Note that an actual math.log call was too expensive for the hundreds of
         tags.
         """
-        unique_tags = []
-        for utn in UniqueTagName.all():
-            tag = {'name': utn.name }
-            if utn.tag_count < 5:
-                fontsize = 10
-            elif utn.tag_count < 10:
-                fontsize = 13
-            elif utn.tag_count < 20:
-                fontsize = 16
-            elif utn.tag_count < 40:
-                fontsize = 19
-            elif utn.tag_count < 120:
-                fontsize = 22
+        unique_tags = memcache.get('cloud_tags')
+
+        if unique_tags is None:
+            unique_tags = []
+            utns = UniqueTagName.all()
+            for utn in utns:
+                tag = {'name': utn.name, 'fontsize': utn.fontsize()}
+                unique_tags.append(tag)
+            if shuffle:
+                random.shuffle(unique_tags)
+            memcache_status = memcache.set('cloud_tags', unique_tags)
+            if memcache_status:
+                logging.debug('wrote cloud tags to memcache')
             else:
-                fontsize = 25
-
-            tag['fontsize'] = fontsize
-            unique_tags.append(tag)
-
-        if shuffle:
-            random.shuffle(unique_tags)
+                logging.debug('cloud tags to memcache write FAILED')
+        else:
+            logging.debug('got cloud tags via memcache')
 
         return unique_tags
 

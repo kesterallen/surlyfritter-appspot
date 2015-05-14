@@ -354,6 +354,21 @@ class UniqueTagName(db.Model):
     name = db.StringProperty()
     tag_count = db.IntegerProperty()
 
+    def fontsize(self):
+        if self.tag_count < 5:
+            fontsize = 10
+        elif self.tag_count < 10:
+            fontsize = 13
+        elif self.tag_count < 20:
+            fontsize = 16
+        elif self.tag_count < 40:
+            fontsize = 19
+        elif self.tag_count < 120:
+            fontsize = 22
+        else:
+            fontsize = 25
+        return fontsize
+
     @classmethod
     def updateTagCounts(cls):
         for unique_tag_name in UniqueTagName.all():
