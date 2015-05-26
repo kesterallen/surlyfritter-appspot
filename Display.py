@@ -32,7 +32,7 @@ from google.appengine.runtime import DeadlineExceededError
 from DataModels import (Picture, PictureIndex, Greeting, UserFavorite,
                         PictureComment, UniqueTagName, Tag)
 
-DEFAULT_SLIDE_COUNT = 6
+DEFAULT_SLIDE_COUNT = 3
 AUTHORIZED_UPLOADERS = ["Kester Allen <kester@gmail.com>",
                         "Abigail Paske <apaske@gmail.com>",
                         "Abby Paske <apaske@gmail.com>", ]
@@ -1567,6 +1567,8 @@ class EmailHandler(InboundMailHandler):
 
     def make_blobstore_image(self, image):
         """Create a blobstore entry containing image, and return the blob key."""
+        #TODO: need to switch this to Google Cloud Storage
+
         # Create the file
         blob_file_name = files.blobstore.create(
                              mime_type='application/octet-stream')
