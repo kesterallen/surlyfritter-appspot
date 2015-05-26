@@ -941,7 +941,7 @@ class NavigatePictures(RequestHandlerParent):
             # Memcache template text to speed things up
             memcache_name = "template_text_%s_%s_%s" % (count, num_slides, nickname)
             #memcache_name = get_memcache_name(NavigatePictures, count=count)
-            template_text = None#memcache.get(memcache_name) # Turn off memcache
+            template_text = memcache.get(memcache_name)
             if template_text is None:
 
                 unique_tags = TagCloudHandler.get_cloud_tags()
@@ -950,7 +950,7 @@ class NavigatePictures(RequestHandlerParent):
 
                 prev_index = self.get_prev_index(index)
                 newest_index = highest_picture_index()
-                carousel_slides = []
+                carousel_slides = [] # TODO-switchdirection: reverse these
                 for islide in range(num_slides):
                     slide_doi = dateOrderIndex - islide
                     if slide_doi < 0:
