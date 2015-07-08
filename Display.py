@@ -145,7 +145,7 @@ def add_picture(image, name, isBlobstore=BLOBSTORE_UPLOAD_DEFAULT):
     else:
         image_size = len(image)
 
-    logging.info('Display.add_picture: image size for %s is %s .' % 
+    logging.info('Display.add_picture: image size for %s is %s .' %
         (name, image_size))
 
     if image_size > MAX_IMAGE_UPLOAD_SIZE:
@@ -479,7 +479,7 @@ class MiriTimeJumpHandler(TimeJumpHandler):
         years = float(years)
         shifted_date = self.get_shifted_date(self.birth_date, years)
         shifted_index = self.get_index_from_date(shifted_date).dateOrderIndex
-        self.redirect('/navperm/%d' % shifted_index)
+        self.redirect('/nav/%d' % shifted_index)
 
     @classmethod
     def seconds_since_birth(cls):
@@ -575,7 +575,7 @@ class SameAgeJumpHandler(TimeJumpHandler):
             )
             pis.append(pi)
 
-        self.redirect('/side_by_side/%s/%s/%s' % (pis[0].count, 
+        self.redirect('/side_by_side/%s/%s/%s' % (pis[0].count,
                                                   pis[1].count,
                                                   pis[2].count))
 
@@ -968,6 +968,7 @@ class NavigatePictures(RequestHandlerParent):
                         'picture_comments': PictureComment.getCommentsString(count),
                         'tags': Tag.getTagNames(count),
                         'date': str_to_dt(date_order_string),
+                        'count': count,
                     }
                     carousel_slides.append(carousel_slide)
                 tagNamesForCount = Tag.getTagNames(count)
@@ -977,7 +978,7 @@ class NavigatePictures(RequestHandlerParent):
                     tagNamesForCount, tagsStringForCount))
                 template_values = {
                     'admin_flag':          admin_flag,
-                    'count_index':         count,
+                    'count_index':         carousel_slides[-1]['count'],
                     'prev_index':          prev_index,
                     'current_index':       dateOrderIndex,
                     'next_index':          self.get_next_index(index),
@@ -1131,7 +1132,7 @@ class NavigatePictures(RequestHandlerParent):
 class FilmstripHandler(ImageParent):
     def get_filmstrip_indices(self, num_pics, current_index=None):
         """
-        Get the PictureIndex.count int values for a filmstrip.
+        Get the PictureIndex objects for a filmstrip.
 
         If current_index is specified, return the num_pics previous pictures
         (including current_index). If current_index is None, return a random
@@ -1143,27 +1144,26 @@ class FilmstripHandler(ImageParent):
         is_random = (current_index is None)
         if is_random:
             tjh = TimeJumpHandler()
-            indices = []
+            pis = []
             for i in range(num_pics):
                 rand_dt = MiriTimeJumpHandler.random_datetime_since_birth()
                 index = tjh.get_index_from_date(str(rand_dt))
-                indices.append(index)
+                pis.append(index)
         else:
-            indices = range(current_index-num_pics, current_index+1)
-            indices.reverse()
+            indices = [current_index-i for i in range(num_pics)]
+            pis = [PictureIndex.get(index, by_date=False) for index in indices]
 
-        return indices
+        return pis
 
     def get_filmstrip_html(self, current_index, num_pics=20):
         num_pics_request= self.request.get('slidecount')
         if num_pics_request:
-            num_pics = int(num_pics_request)
+            num_pics = int(float(num_pics_request))
 
         logging.info("num_pics = %s" % num_pics)
         pictureIndices = []
 
         for index in self.get_filmstrip_indices(num_pics, current_index):
-            pi = PictureIndex.get(index)
             if pi:
                 logging.info("PictureIndex.get(%d) returns %s" % (index, pi))
                 count = PictureIndex.dateOrderIndexToCount(index)
@@ -1191,15 +1191,15 @@ class FilmstripHandler(ImageParent):
 class CarouselHandler(FilmstripHandler):
     def get(self, index=None, num_pics=10):
         if index is not None:
-            index = int(index)
+            index = int(float(index))
+
+        num_pics = int(float(num_pics))
 
         slides = []
-        for fs_index in self.get_filmstrip_indices(num_pics, index):
-            count = fs_index.count
-            pi = PictureIndex.get(count, by_date=False)
-            date = get_date_for_slides(count)
-            picture_comments = PictureComment.getCommentsString(count)
-            tags = Tag.getTagNames(count)
+        for pi in self.get_filmstrip_indices(num_pics, index):
+            date = pi.dateOrderString
+            picture_comments = PictureComment.getCommentsString(pi.count)
+            tags = Tag.getTagNames(pi.count)
 
             if pi:
                 slides.append({'index': pi.dateOrderIndex,
@@ -1740,6 +1740,7 @@ def real_main():
                      #('/side_by_side/(.*)/(.*)', SideBySideHandler),
                      #('/filmstrip/(.*)',      FilmstripHandler),
                      #('/filmstrip',           FilmstripHandler),
+                     ('/carousel/(.*)/(.*)',  CarouselHandler),
                      ('/carousel/(.*)',       CarouselHandler),
                      ('/carousel/',           CarouselHandler),
                      ('/carousel',            CarouselHandler),

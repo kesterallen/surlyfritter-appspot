@@ -16,46 +16,46 @@
     <div class="navbar-collapse collapse">
       <ul class="nav navbar-nav navbar-right">
 
-        <li><a title="Permalink for this page" href="/navperm/{{count_index}}/1">Permalink<span class="glyphicon glyphicon-link"></span></a></li> <!-- page permalink -->
-        <li><a title="Permalink for this image" href="/imgperm/{{count_index}}">Image Permalink<span class="glyphicon glyphicon-link"></span><span class="glyphicon glyphicon-picture"></span></a></li> <!-- image permalink -->
+        <li><a title="Permalink for this page" href="/navperm/{{count_index}}/1"><span class="hidden-lg">Permalink</span><span class="glyphicon glyphicon-link"></span></a></li> <!-- page permalink -->
+        <li><a title="Permalink for this image" href="/imgperm/{{count_index}}"><span class="hidden-lg">Image Permalink</span><span class="glyphicon glyphicon-link"></span><span class="glyphicon glyphicon-picture"></span></a></li> <!-- image permalink -->
 
         <!-- TODO-switchdirection: change the meaning of of these arrows -->
 
         <!-- Newest, Newer, Random, Older, Oldest/First -->
-        <li><a title="Newest picture" href="/nav/{{newest_index}}">Newest<span class="glyphicon glyphicon-backward"></span></a></li>
-        <li><a title="Next (newer) picture" href="#" onclick="goLeft()">Next<span class="glyphicon glyphicon-chevron-left"></span></a></li>
-        <li><a title="Random picture" href="/nav/{{random_index}}">Random ?</a></li>
-        <li><a title="Previous (older) picture" href="#" onclick="goRight()">Previous<span class="glyphicon glyphicon-chevron-right"></span></a></li>
-        <li><a title="Earliest (oldest) picture" href="/nav/0">Earliest<span class="glyphicon glyphicon-forward"></a></li>
+        <li><a title="Newest picture" href="/nav/{{newest_index}}"><span class="hidden-lg">Newest</span><span class="glyphicon glyphicon-backward"></span></a></li>
+        <li><a title="Next (newer) picture" href="#" onclick="goLeft()"><span class="hidden-lg">Next</span><span class="glyphicon glyphicon-chevron-left"></span></a></li>
+        <li><a title="Random picture" href="/nav/{{random_index}}"><span class="hidden-lg">Random </span>?</a></li>
+        <li><a title="Previous (older) picture" href="#" onclick="goRight()"><span class="hidden-lg">Previous</span><span class="glyphicon glyphicon-chevron-right"></span></a></li>
+        <li><a title="Earliest (oldest) picture" href="/nav/0"><span class="hidden-lg">Earliest</span><span class="glyphicon glyphicon-forward"></a></li>
 
         <!-- Jump 2.5yrs forward, 1yr forward, same age, 1yr ealier, 2.5yrs earlier -->
         <li><a title="Time jump 2.5 years later" href="/timejump/{{current_index}}/2.5">
-              +2.5yr
+              <span class="hidden-lg">+2.5yr</span>
               <span class="glyphicon glyphicon-backward"></span>
               <span class="glyphicon glyphicon-time"></span>
         </a></li>
         <li><a title="Time jump one year later" href="/timejump/{{current_index}}/1.0">
-              +1.0yr
+              <span class="hidden-lg">+1.0yr</span>
               <span class="glyphicon glyphicon-chevron-left"></span>
               <span class="glyphicon glyphicon-time"></span>
         </a></li>
-        <li><a title="Miri, Julia, and Linus at the same age" href="/same_age">Same Age<span class="glyphicon glyphicon-time"></span> =</a></li>
+        <li><a title="Miri, Julia, and Linus at the same age" href="/same_age"><span class="hidden-lg">Same Age</span><span class="glyphicon glyphicon-time"></span> =</a></li>
         <li><a title="Time jump one year earlier" href="/timejump/{{current_index}}/-1.0">
-              -1.0yr
+              <span class="hidden-lg">-1.0yr</span>
               <span  class="glyphicon glyphicon-time"></span>
               <span class="glyphicon glyphicon-chevron-right"></span>
         </a></li>
         <li><a title="Time jump 2.5 years earlier" href="/timejump/{{current_index}}/-2.5">
-              -2.5yr
+              <span class="hidden-lg">-2.5yr</span>
               <span  class="glyphicon glyphicon-time"></span>
               <span class="glyphicon glyphicon-forward"></span>
         </a></li>
 
         <li><a title="Ten random pictures" href="/carousel">
-              10 Random ? <span class="glyphicon glyphicon-film"></span>
+              <span class="hidden-lg">10 Random ?</span> <span class="glyphicon glyphicon-film"></span>
         </a></li> <!-- random set of pics -->
         <li><a title="The ten previous pictures" href="/carousel/{{count_index}}">
-              10 Previous <span class="glyphicon glyphicon-film"></span>
+              <span class="hidden-lg">10 Previous</span> <span class="glyphicon glyphicon-film"></span>
         </a></li> <!-- the previous 10 pics -->
 
 
