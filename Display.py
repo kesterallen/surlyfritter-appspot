@@ -13,8 +13,10 @@ import wsgiref.handlers
 
 from pprint import pformat
 
+import lib.cloudstorage as gcs
+
 from google.appengine.api.images import CORRECT_ORIENTATION
-from google.appengine.api import files
+from google.appengine.api import app_identity
 from google.appengine.api import images
 from google.appengine.api import mail
 from google.appengine.api import memcache
@@ -32,7 +34,11 @@ from google.appengine.runtime import DeadlineExceededError
 from DataModels import (Picture, PictureIndex, Greeting, UserFavorite,
                         PictureComment, UniqueTagName, Tag)
 
-DEFAULT_SLIDE_COUNT = 3
+DEFAULT_SLIDE_COUNT = 5
+
+GCS_BUCKET_NAME = os.environ.get('BUCKET_NAME', app_identity.get_default_gcs_bucket_name())
+GCS_BUCKET = '/' + GCS_BUCKET_NAME
+
 AUTHORIZED_UPLOADERS = ["Kester Allen <kester@gmail.com>",
                         "Abigail Paske <apaske@gmail.com>",
                         "Abby Paske <apaske@gmail.com>", ]
@@ -45,6 +51,7 @@ cn_hpi  = "highestPictureIndex"
 cn_hpi_date = "highestPictureIndexByDate"
 DAYS_IN_YEAR = 365.25
 SECS_IN_YEAR = DAYS_IN_YEAR * 3600 * 24
+
 
 # Functions:
 #
@@ -141,7 +148,8 @@ def add_picture(image, name, isBlobstore=BLOBSTORE_UPLOAD_DEFAULT):
     #
     if isBlobstore:
         blobInfo = blobstore.BlobInfo.get(image)
-        image_size = blobInfo.size
+        #image_size = blobInfo.size
+        image_size = 666#blobInfo.size #TODO:  fix this
     else:
         image_size = len(image)
 
@@ -1451,11 +1459,33 @@ class OrphanHandler(RequestHandlerParent):
                     good_count +=1
 
 class DeleteOrphanBlobsHandler(OrphanHandler):
-    """Delete ophan blobs which blobs are orphans"""
+    """Delete orphan blobs"""
     def get(self):
-        self.get_orphan_blobs()
-        for blob in self.orphan_blobs:
-            blob.delete()
+        try:
+            self.get_orphan_blobs()
+        except DeadlineExceededError as dee:
+            self.writeOutput(
+                "Deadline Exceeded: %s orphan blobs to delete." %
+                (len(self.orphan_blobs)))
+        finally:
+            for blob in self.orphan_blobs:
+                blob.delete()
+            return
+
+class DeleteOrphanPicturesHandler(OrphanHandler):
+    """Delete orphan pictures"""
+    def get(self):
+        try:
+            self.get_orphan_pictures()
+        except DeadlineExceededError as dee:
+            self.writeOutput(
+                "Deadline Exceeded: %s orphan pictures to delete." %
+                (len(self.orphan_pictures)))
+        finally:
+            for picture in self.orphan_pictures:
+                logging.info('deleting picture %s' % picture)
+                picture.delete()
+            return
 
 class CountOrphanBlobsHandler(OrphanHandler):
     """Display which blobs are orphans"""
@@ -1560,30 +1590,75 @@ class MetaDataHandler(RequestHandlerParent):
 
         self.writeOutput("%s\n" % json.dumps(info))
 
+class WriteBucket(RequestHandlerParent):
+    """Test to demonstract cloudstorage writes."""
+    def get(self):
+        filename = 'foo%s' % datetime.datetime.now().isoformat()
+        gcs_filename = GCS_BUCKET + '/' +  filename
+        logging.info("open gcs_filename %s" % gcs_filename)
+
+        gcs_file = gcs.open(gcs_filename, 'w')
+        logging.info("write gcs_filename %s" % gcs_filename)
+        gcs_file.write('asdfasdfasdfasdfasdfasd'.encode('utf-8'))
+        logging.info("close gcs_filename %s" % gcs_filename)
+        gcs_file.close()
+        logging.info("done gcs_filename %s" % gcs_filename)
+
+        blobstore_filename = '/gs' + gcs_filename
+        logging.info("blobstore_filename %s" % blobstore_filename)
+
+        gs_key = blobstore.create_gs_key(blobstore_filename)
+        logging.info("gs key %s" % gs_key)
+
+class ListBucket(RequestHandlerParent):
+    """List cloudstorage files."""
+    def get(self):
+        gcs_iterator = gcs.listbucket(GCS_BUCKET)
+        logging.info("gcs_iterator %s" % gcs_iterator)
+        items = []
+        for item in gcs_iterator:
+            logging.info("gcs_iterator item %s" % item)
+            items.append(item)
+
+        self.writeOutput("Done %s %s\n" % (gcs_iterator, pformat(items)))
+
 class EmailHandler(InboundMailHandler):
     def post(self):
         """Transforms body to email request."""
         self.receive(mail.InboundEmailMessage(self.request.body))
 
-    def make_blobstore_image(self, image):
-        """Create a blobstore entry containing image, and return the blob key."""
-        #TODO: need to switch this to Google Cloud Storage
+    def upload_to_google_cloudstorage(self, filename, image):
+        """Create a GCS file with GCS client lib.
 
-        # Create the file
-        blob_file_name = files.blobstore.create(
-                             mime_type='application/octet-stream')
+        Args:
+          filename: GCS filename.
+          image: data to write
 
-        # Open the file and write to it
-        with files.open(blob_file_name, 'a') as f:
-            f.write(image)
+        Returns:
+          The corresponding string blobkey for this GCS file.
+        """
+        # Create a GCS file with GCS client. Add a timestamp so the filename
+        # won't get stomped.
+        gcs_filename = "%s/%s%s" % (GCS_BUCKET,
+                                    datetime.datetime.now().isoformat(),
+                                    filename)
 
-        # Finalize the file. Do this before attempting to read it.
-        files.finalize(blob_file_name)
+        logging.info("gcs_filename %s" % gcs_filename)
+        gcs_file = gcs.open(gcs_filename,
+                            'w',
+                            content_type='image/jpeg')
+        gcs_file.write(image)
+        gcs_file.close()
 
-        # Get the file's blob key
-        blob_key = files.blobstore.get_blob_key(blob_file_name)
+        # Blobstore API requires extra /gs to distinguish against blobstore files
+        blobstore_filename = '/gs' + gcs_filename
+        logging.info("blobstore_filename %s" % blobstore_filename)
 
-        return blob_key
+        # This blob_key works with blobstore APIs that do not expect a
+        # corresponding BlobInfo in datastore
+        gs_key = blobstore.create_gs_key(blobstore_filename)
+        logging.info("gs key %s" % gs_key)
+        return gs_key
 
     def receive(self, email, isBlobstore=BLOBSTORE_UPLOAD_DEFAULT):
         # Only accept email from authorized users:
@@ -1645,12 +1720,18 @@ class EmailHandler(InboundMailHandler):
                 continue
 
             if isBlobstore:
-                blob_key = self.make_blobstore_image(decoded_image)
-                image_to_add = blob_key
+                #blob_key = self.make_blobstore_image(decoded_image)
+                try:
+                    blob_key = self.upload_to_google_cloudstorage(name, decoded_image)
+                    image_for_picture = blob_key
+                    logging.info("making blobstore image: %s" % blob_key)
+                except gcs.ServerError as err:
+                    logging.info("upload_to_google_cloudstorage %s" % err)
+                    continue
             else:
-                image_to_add = decoded_image
+                image_for_picture = decoded_image
 
-            pi = add_picture(image=image_to_add, name=name, isBlobstore=isBlobstore)
+            pi = add_picture(image=image_for_picture, name=name, isBlobstore=isBlobstore)
 
             successful_picture_indices.append(pi)
 
@@ -1701,6 +1782,9 @@ class NotFoundPageHandler(webapp.RequestHandler):
 def real_main():
     application = webapp.WSGIApplication(
                     [
+                     ('/listbucket',          ListBucket),
+                     ('/writebucketfile',     WriteBucket),
+
                      ('/nav',                 NavigatePictures),
                      ('/nav/',                NavigatePictures),
                      ('/nav/(.*)/(.*)',       NavigatePictures),
@@ -1792,6 +1876,7 @@ def real_main():
                      ('/countorphanpictures',      CountOrphanPicturesHandler),
                      ('/adoptorphanpictures/(.*)', AdoptOrphanPicturesHandler),
                      ('/deleteorphanblobs',        DeleteOrphanBlobsHandler),
+                     ('/deleteorphanpictures',     DeleteOrphanPicturesHandler),
                      ('/meta',                     MetaDataHandler),
                      ('/meta/(.*)',                MetaDataHandler),
                      ('/replaceimage',             ReplaceImageHandler),

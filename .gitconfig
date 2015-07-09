@@ -1,0 +1,7 @@
+[user]
+    email = kester@gmail.com
+    name = Kester Allen
+[credential]
+    helper = cache
+[alias]
+    st = status
