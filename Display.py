@@ -1720,12 +1720,12 @@ class EmailHandler(InboundMailHandler):
                 continue
 
             if isBlobstore:
-                #blob_key = self.make_blobstore_image(decoded_image)
                 try:
+                    #blob_key = self.make_blobstore_image(decoded_image)
                     blob_key = self.upload_to_google_cloudstorage(name, decoded_image)
                     image_for_picture = blob_key
                     logging.info("making blobstore image: %s" % blob_key)
-                except gcs.ServerError as err:
+                except Exception as err: # broad to avoid creating bad PictureIndexes
                     logging.info("upload_to_google_cloudstorage %s" % err)
                     continue
             else:
