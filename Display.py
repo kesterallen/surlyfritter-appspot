@@ -34,7 +34,7 @@ from google.appengine.runtime import DeadlineExceededError
 from DataModels import (Picture, PictureIndex, Greeting, UserFavorite,
                         PictureComment, UniqueTagName, Tag)
 
-DEFAULT_SLIDE_COUNT = 5
+DEFAULT_SLIDE_COUNT = 4
 
 GCS_BUCKET_NAME = os.environ.get('BUCKET_NAME', app_identity.get_default_gcs_bucket_name())
 GCS_BUCKET = '/' + GCS_BUCKET_NAME
@@ -97,11 +97,11 @@ def highest_index_value(memcache_name, field_name):
 
     if index is None:
         logging.info("Running highest picture index retrieve")
-        highest_picture_index = PictureIndex.all(
+        highest_pi = PictureIndex.all(
                                 ).order('-%s' % field_name
                                 ).get()
-        if highest_picture_index:
-            index = getattr(highest_picture_index, field_name)
+        if highest_pi:
+            index = getattr(highest_pi, field_name)
             logging.info("highest picture index is %s" % index)
         else:
             index = 0
@@ -290,6 +290,11 @@ class RequestHandlerParent(webapp.RequestHandler):
                 index = highest
 
         return index
+
+class ImageServingUrl(webapp.RequestHandler):
+    def get(self, index=None):
+        pi = PictureIndex.get(index, byDate=False)
+        self.response.out.write(pi.img_url)
 
 class ImageParent(RequestHandlerParent,
                   blobstore_handlers.BlobstoreDownloadHandler):
@@ -544,11 +549,10 @@ class SideBySideHandler(RequestHandlerParent):
         for count_index in count_indices:
             pi = PictureIndex.get(count_index, by_date=False)
             if pi:
-                date = str_to_dt(pi.dateOrderString)
 
                 pics.append({
                     'picture_index': pi,
-                    'date': date,
+                    'date': datetime,
                     'miri_age': float((date - m_date).days) / DAYS_IN_YEAR,
                     'julia_age': float((date - j_date).days) / DAYS_IN_YEAR,
                     'linus_age': float((date - l_date).days) / DAYS_IN_YEAR,
@@ -906,8 +910,6 @@ class NavigatePictures(RequestHandlerParent):
             if num_slides > 20:
                 num_slides = 20
             is_carousel_back = False
-        logging.info("num_slides is %s" % num_slides)
-        logging.info("is_carousel_back is %s" % is_carousel_back)
 
         try:
             # Bail out if there are no pics:
@@ -950,67 +952,49 @@ class NavigatePictures(RequestHandlerParent):
             memcache_name = "template_text_%s_%s_%s" % (count, num_slides, nickname)
             #memcache_name = get_memcache_name(NavigatePictures, count=count)
             template_text = memcache.get(memcache_name)
-            if template_text is None:
-
-                unique_tags = TagCloudHandler.get_cloud_tags()
-
-                #greetings = Greeting.all().order('-date'),
-
+            if True:#template_text is None:
                 prev_index = self.get_prev_index(index)
                 newest_index = highest_picture_index()
-                carousel_slides = [] # TODO-switchdirection: reverse these
-                for islide in range(num_slides):
-                    slide_doi = dateOrderIndex - islide
-                    if slide_doi < 0:
-                        slide_doi = 0
-                    pi = PictureIndex.all(
-                             ).filter('dateOrderIndex', slide_doi).get()
-                    if pi:
-                        count = pi.count
-                        date_order_string = pi.dateOrderString
-                    else:
-                        count = 0
-                        date_order_string = '1999:01:01'
-                    carousel_slide = {
-                        'index': slide_doi,
-                        'picture_comments': PictureComment.getCommentsString(count),
-                        'tags': Tag.getTagNames(count),
-                        'date': str_to_dt(date_order_string),
-                        'count': count,
-                    }
-                    carousel_slides.append(carousel_slide)
-                tagNamesForCount = Tag.getTagNames(count)
-                tagsStringForCount = Tag.getTagsString(count)
-                logging.debug(
-                    "tagNamesForCount: '%s', tagsStringForCount: '%s'" % (
-                    tagNamesForCount, tagsStringForCount))
+
+                # TODO-switchdirection: reverse these
+                slide_dois = [dateOrderIndex - i for i in range(num_slides)]
+                slide_dois = [i if i > 0 else 0 for i in slide_dois]
+                pis = PictureIndex.all(
+                                 ).filter('dateOrderIndex in', slide_dois
+                                 ).order('-dateOrderIndex'
+                                 ).fetch(num_slides)
+
+                if len(pis) > 0:
+                    thedate = pis[0].datetime
+                    count_index = pis[-1].count,
+                else:
+                    thedate = '(no date available)'
+                    count_index = 0
+
                 template_values = {
-                    'admin_flag':          admin_flag,
-                    'count_index':         carousel_slides[-1]['count'],
-                    'prev_index':          prev_index,
-                    'current_index':       dateOrderIndex,
-                    'next_index':          self.get_next_index(index),
-                    'newest_index':        newest_index,
-                    'random_index':        random.randint(0, highest_picture_index()),
-                    'picture_comments':    PictureComment.getCommentsString(count),
-                    'slideshow_flag':      self.request.get('slideshow_flag'),
-                    'slideshow_frequency': self.request.get('slideshow_frequency'),
-                    'tags':                unique_tags,
-                    'url_linktext':        url_linktext,
-                    'url':                 url,
-                    'user':                user,
-                    'welcome_text':        welcome_text,
-                    'thedate':             carousel_slides[0]['date'],
-                    'thetags':             tagNamesForCount,
-                    'picture_tags':        tagsStringForCount,
-                    'blob_upload_url':     blobstore.create_upload_url('/blobupload'),
-                    'carousel_slides':     carousel_slides,
-                    'is_carousel_back':    is_carousel_back,
-                    #'greetings':           greetings,
+                    'carousel_slides':  pis,
+
+                    'count_index':      count_index,
+                    'prev_index':       prev_index,
+                    'current_index':    dateOrderIndex,
+                    'next_index':       self.get_next_index(index),
+                    'newest_index':     newest_index,
+                    'random_index':     random.randint(0, highest_picture_index()),
+
+                    'tags':             TagCloudHandler.get_cloud_tags(),
+
+                    'url_linktext':     url_linktext,
+                    'url':              url,
+                    'user':             user,
+                    'admin_flag':       admin_flag,
+                    'welcome_text':     welcome_text,
+                    'thedate':          thedate,
+                    'blob_upload_url':  blobstore.create_upload_url('/blobupload'),
+                    'is_carousel_back': is_carousel_back,
                 }
                 template_text = render_template_text('navigate.html', template_values)
                 memcacheStatus = memcache.set(memcache_name, template_text)
-                logging.debug("done memcache of template_text")
+                logging.info("done memcache of template_text")
                 if not memcacheStatus:
                     logging.debug("memcaching.set failed for template_text")
             else:
@@ -1020,7 +1004,6 @@ class NavigatePictures(RequestHandlerParent):
         except OverQuotaError as oqe:
             template_text = render_template_text('over_quota.html', {})
             self.writeOutput(template_text)
-            #self.error(404)
             return
 
     def get_indices_with_index(self, index):
@@ -1033,7 +1016,6 @@ class NavigatePictures(RequestHandlerParent):
         is_permalink_exp = req_path.startswith('/navperm')
         is_permalink_imp = re.match(r'/\d+', req_path) is not None
         is_permalink = is_permalink_exp or is_permalink_imp
-        logging.info("NavigatePictures.get_indices_with_index: index: %s, permalink: %s" % (index, is_permalink))
         if is_permalink:
             index_mode = 'count'
             count = int(float(index))
@@ -1203,24 +1185,14 @@ class CarouselHandler(FilmstripHandler):
 
         num_pics = int(float(num_pics))
 
-        slides = []
-        for pi in self.get_filmstrip_indices(num_pics, index):
-            date = pi.dateOrderString
-            picture_comments = PictureComment.getCommentsString(pi.count)
-            tags = Tag.getTagNames(pi.count)
-
-            if pi:
-                slides.append({'index': pi.dateOrderIndex,
-                               'date': date,
-                               'picture_comments': picture_comments,
-                               'tags': tags,})
-
+        pis = self.get_filmstrip_indices(num_pics, index)
         template_text = render_template_text(
                             'carousel.html',
                             {
                                 'current_index': index,
                                 'newest_index': highest_picture_index(),
-                                'carousel_slides': slides
+                                'carousel_slides': pis,
+                                'dont_lazyload': True,
                             }
                         )
         self.writeOutput(template_text)
@@ -1276,22 +1248,15 @@ class ImagesByTagHandler(RequestHandlerParent):
             uniqueTagName = UniqueTagName.all().filter('name', tag_name).get()
             tags = Tag.all().filter('name_ref', uniqueTagName).order('date')
 
+            pi_counts = [tag.count for tag in tags]
+            pis = PictureIndex.all().filter('count in', pi_counts)
+
             template_values = {
                 'current_index': 10, # why not?
                 'newest_index': highest_picture_index(),
                 'tag_name': tag_name,
-                'carousel_slides': [],
+                'carousel_slides': pis,
             }
-
-            for tag in tags:
-                picture_index = PictureIndex.get(tag.count, by_date=False)
-
-                carousel_slide = {
-                    'index': picture_index.dateOrderIndex,
-                    'picture_comments': PictureComment.getCommentsString(picture_index.count),
-                    'date': get_date_for_slides(picture_index.count),
-                }
-                template_values['carousel_slides'].append(carousel_slide)
 
             outText = render_template_text('images_by_tag.html', template_values)
             memcacheStatus = memcache.set(memcache_name, outText)
@@ -1595,20 +1560,11 @@ class WriteBucket(RequestHandlerParent):
     def get(self):
         filename = 'foo%s' % datetime.datetime.now().isoformat()
         gcs_filename = GCS_BUCKET + '/' +  filename
-        logging.info("open gcs_filename %s" % gcs_filename)
-
         gcs_file = gcs.open(gcs_filename, 'w')
-        logging.info("write gcs_filename %s" % gcs_filename)
-        gcs_file.write('asdfasdfasdfasdfasdfasd'.encode('utf-8'))
-        logging.info("close gcs_filename %s" % gcs_filename)
+        gcs_file.write('test text'.encode('utf-8'))
         gcs_file.close()
-        logging.info("done gcs_filename %s" % gcs_filename)
-
         blobstore_filename = '/gs' + gcs_filename
-        logging.info("blobstore_filename %s" % blobstore_filename)
-
         gs_key = blobstore.create_gs_key(blobstore_filename)
-        logging.info("gs key %s" % gs_key)
 
 class ListBucket(RequestHandlerParent):
     """List cloudstorage files."""
@@ -1784,7 +1740,7 @@ def real_main():
                     [
                      ('/listbucket',          ListBucket),
                      ('/writebucketfile',     WriteBucket),
-
+                     ('/imgsrv/(.*)',         ImageServingUrl),
                      ('/nav',                 NavigatePictures),
                      ('/nav/',                NavigatePictures),
                      ('/nav/(.*)/(.*)',       NavigatePictures),
@@ -1895,11 +1851,12 @@ def profile_main():
     print "<pre>"
     stats = pstats.Stats(prof)
     stats.sort_stats("cumulative")  # Or cumulative
-    stats.print_stats(80)  # 80 = how many to print
+    #stats.print_stats(80)  # 80 = how many to print
     # The rest is optional.
     stats.print_callees()
     stats.print_callers()
     print "</pre>"
 
 if __name__ == "__main__":
-    real_main()
+    profile_main()
+    #real_main()

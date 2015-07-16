@@ -18,7 +18,7 @@
   {% endif %}
 
   <div class="carousel-inner">
-    {% for carousel_slide in carousel_slides %}
+    {% for slide in carousel_slides %}
       <div class="item
         {% if is_carousel_back %}
           {% if forloop.counter == carousel_slides|length %} active{% endif %}
@@ -27,30 +27,21 @@
         {% endif %}
         "
       >
+          <a href="/nav/{{slide.dateOrderIndex}}/1">
+              <img src="{{slide.img_url}}" alt="{{slide.comments}}"/>
+          </a>
 
-        {% if carousel_slides|length > 1 %} <a href="/nav/{{carousel_slide.index}}/1"> {% endif %}
-        {% if forloop.counter0 == 0 %}
-          <img src="/img/{{carousel_slide.index}}"
-               alt="{{carousel_slide.picture_comments}}">
-        {% else %}
-          <img class="lazyload"
-               src="/images/loader.gif"
-               height="600"
-               data-src="/img/{{carousel_slide.index}}"
-               alt="{{carousel_slide.picture_comments}}">
-        {% endif %}
-        {% if carousel_slides|length > 1 %} </a> {% endif %}
-
-        <div class="container">
+          <div class="container">
           <div class="carousel-caption">
-            <p class="tag-links">
-              {{carousel_slide.index|add:"1"}}{% if newest_index %} / {{newest_index|add:"1"}} {% endif %}
-              {{carousel_slide.picture_comments}}
-              {% for tag in carousel_slide.tags %}
+          <p class="tag-links">
+              {{slide.dateOrderIndex|add:"1"}}
+              {% if newest_index %} / {{newest_index|add:"1"}} {% endif %}
+              {{slide.comments}}
+              {% for tag in slide.tags %}
                 <a href="/tag/{{tag}}">{{tag}} </a>
               {% endfor %} 
             </p>
-            <p>{{carousel_slide.date}}</p>
+            <p>{{slide.datetime}}</p>
           </div>
         </div>
       </div>

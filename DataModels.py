@@ -18,6 +18,8 @@ from google.appengine.ext import blobstore
 PIL_EXIF_TAG_KEY_DATETIME = 306
 PIL_EXIF_TAG_KEY_ORIENTATION = 274
 
+IMAGE_SIZE = 1000
+
 # TODO: Memcache name generation:
 #
 class memcachingParent(db.Model):
@@ -296,6 +298,33 @@ class PictureIndex(db.Model):
         msg = ('count: %s, dateOrderndex: %s, dateOrderString: %s' % 
                 (self.count, self.dateOrderIndex, self.dateOrderString))
         return msg
+
+    @property
+    def tags(self):
+        return Tag.getTagNames(self.count)
+
+    @property
+    def comments(self): 
+        return PictureComment.getCommentsString(self.count)
+
+    @property
+    def datetime(self):
+        return self.pix_ref.getDate(True)
+
+    @property
+    def img_url(self):
+        if self is None:
+            url = '/img/0'
+            return url
+
+        try:
+            blob_key = self.pix_ref.blobStorePictureKey
+            url = images.get_serving_url(blob_key, size=IMAGE_SIZE)
+        except Exception as err:
+            logging.debug("Error in PictureIndex.img_url: %s", err)
+            url = '/img/%s' % self.dateOrderIndex
+
+        return url
 
 class Greeting(db.Model):
     author = db.UserProperty()
