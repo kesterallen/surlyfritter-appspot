@@ -20,6 +20,33 @@ PIL_EXIF_TAG_KEY_ORIENTATION = 274
 
 IMAGE_SIZE = 1000
 
+def str_to_dt(datestring):
+    """Convert a string date of the formats:
+            YYYY:MM:DD HH:mm:ss foo:asdf-bar.asdf.4312-_asdf
+            YYYY:MM:DD HH:mm:ss
+            YYYY:MM:DD HH:mm
+            YYYY:MM:DD HH
+            YYYY:MM:DD
+            YYYY MM DD HH mm ss foo:asdf-bar.asdf.4312-_asdf
+            YYYY MM DD HH mm ss
+            YYYY MM DD HH mm
+            YYYY MM DD HH
+            YYYY MM DD
+    to a datetime.datetime object.
+    """
+    str_arr = re.split('[: ]', datestring)
+
+    # Take up to the first 6 elements, ignoring extra elements:
+    if len(str_arr) > 6:
+        nelements = 6
+    else:
+        nelements = len(str_arr)
+    date_arr = [int(d) for d in str_arr[:nelements]]
+
+    dt = datetime.datetime(*date_arr)
+    return dt
+
+
 # TODO: Memcache name generation:
 #
 class memcachingParent(db.Model):
@@ -309,14 +336,10 @@ class PictureIndex(db.Model):
 
     @property
     def datetime(self):
-        return self.pix_ref.getDate(True)
+        return str_to_dt(self.dateOrderString)
 
     @property
     def img_url(self):
-        if self is None:
-            url = '/img/0'
-            return url
-
         try:
             blob_key = self.pix_ref.blobStorePictureKey
             url = images.get_serving_url(blob_key, size=IMAGE_SIZE)
@@ -325,6 +348,16 @@ class PictureIndex(db.Model):
             url = '/img/%s' % self.dateOrderIndex
 
         return url
+
+    def template_repr(self):
+          pi_dict = {
+              'dateOrderIndex': self.dateOrderIndex,
+              'img_url': self.img_url,
+              'comments': self.comments,
+              'tags': self.tags,
+              'datetime': self.datetime,
+          }
+          return pi_dict
 
 class Greeting(db.Model):
     author = db.UserProperty()

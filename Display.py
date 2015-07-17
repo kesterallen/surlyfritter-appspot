@@ -32,7 +32,7 @@ from google.appengine.runtime.apiproxy_errors import OverQuotaError
 from google.appengine.runtime import DeadlineExceededError
 
 from DataModels import (Picture, PictureIndex, Greeting, UserFavorite,
-                        PictureComment, UniqueTagName, Tag)
+                        PictureComment, UniqueTagName, Tag, str_to_dt)
 
 DEFAULT_SLIDE_COUNT = 4
 
@@ -58,30 +58,6 @@ SECS_IN_YEAR = DAYS_IN_YEAR * 3600 * 24
 def get_date_for_slides(pi_count, is_compact=True):
     date = DateByIndexHandler().getText(pi_count, is_compact)
     return date
-
-def str_to_dt(datestring):
-    """Convert a string date of the formats:
-            YYYY:MM:DD HH:mm:ss
-            YYYY:MM:DD HH:mm
-            YYYY:MM:DD HH
-            YYYY:MM:DD
-            YYYY MM DD HH mm ss
-            YYYY MM DD HH mm
-            YYYY MM DD HH
-            YYYY MM DD
-    to a datetime.datetime object.
-    """
-    str_arr = re.split('[: ]', datestring)
-
-    # Take up to the first 6 elements, ignoring extra elements:
-    if len(str_arr) > 6:
-        nelements = 6
-    else:
-        nelements = len(str_arr)
-    date_arr = [int(d) for d in str_arr[:nelements]]
-
-    dt = datetime.datetime(*date_arr)
-    return dt
 
 def render_template_text(template_fname, values_to_insert):
     rendered_text = template.render(
@@ -952,7 +928,7 @@ class NavigatePictures(RequestHandlerParent):
             memcache_name = "template_text_%s_%s_%s" % (count, num_slides, nickname)
             #memcache_name = get_memcache_name(NavigatePictures, count=count)
             template_text = memcache.get(memcache_name)
-            if True:#template_text is None:
+            if template_text is None:
                 prev_index = self.get_prev_index(index)
                 newest_index = highest_picture_index()
 
@@ -966,13 +942,15 @@ class NavigatePictures(RequestHandlerParent):
 
                 if len(pis) > 0:
                     thedate = pis[0].datetime
-                    count_index = pis[-1].count,
+                    count_index = int(pis[-1].count),
                 else:
                     thedate = '(no date available)'
                     count_index = 0
 
+                pi_dicts = [pi.template_repr() for pi in pis]
+                logging.info(pi_dicts)
                 template_values = {
-                    'carousel_slides':  pis,
+                    'carousel_slides':  pi_dicts,
 
                     'count_index':      count_index,
                     'prev_index':       prev_index,
