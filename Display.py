@@ -526,9 +526,10 @@ class SideBySideHandler(RequestHandlerParent):
             pi = PictureIndex.get(count_index, by_date=False)
             if pi:
 
+                date = pi.datetime
                 pics.append({
                     'picture_index': pi,
-                    'date': datetime,
+                    'date': date,
                     'miri_age': float((date - m_date).days) / DAYS_IN_YEAR,
                     'julia_age': float((date - j_date).days) / DAYS_IN_YEAR,
                     'linus_age': float((date - l_date).days) / DAYS_IN_YEAR,
