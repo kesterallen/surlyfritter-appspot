@@ -3,8 +3,6 @@ import datetime
 import re
 import math
 import EXIF
-#from PIL import Image
-#from PIL.ExifTags import TAGS
 import logging
 import StringIO
 from pprint import pformat
@@ -14,9 +12,6 @@ from google.appengine.api import memcache
 from google.appengine.api import users
 from google.appengine.ext import db
 from google.appengine.ext import blobstore
-
-PIL_EXIF_TAG_KEY_DATETIME = 306
-PIL_EXIF_TAG_KEY_ORIENTATION = 274
 
 IMAGE_SIZE = 1000
 
@@ -167,8 +162,6 @@ class Picture(db.Model):
 
         exivTags = self.getExivTags(image)
 
-        # TODO: rewrite with PIL and Orientation / PIL_EXIF_TAG_KEY_ORIENTATION
-        #exif_data = img._getexif()
 
         if "Image Orientation" in exivTags:
             logging.debug("image orientation is in exivTags")
@@ -210,7 +203,6 @@ class Picture(db.Model):
         return image
 
     def getDateRaw(self):
-        # TODO: rewrite with PIL DateTime/ PIL_EXIF_TAG_KEY_DATETIME
         exivTags = self.getExivTags()
         if 'Image DateTime' in exivTags:
             imageTime = str(exivTags['Image DateTime'])
@@ -230,7 +222,6 @@ class Picture(db.Model):
         return imageTime
 
     def isExivDate(self):
-        # TODO: rewrite with PIL DateTime/ 306
         exivTags = self.getExivTags()
         return 'Image DateTime' in exivTags
 
