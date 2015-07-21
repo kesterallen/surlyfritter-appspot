@@ -942,10 +942,11 @@ class NavigatePictures(RequestHandlerParent):
 
                 if len(pis) > 0:
                     thedate = pis[0].datetime
-                    count_index = int(pis[-1].count),
+                    count_index = int(pis[-1].count)
                 else:
                     thedate = '(no date available)'
                     count_index = 0
+                logging.info("count_index is %s, thedate is %s", count_index, thedate)
 
                 pi_dicts = [pi.template_repr() for pi in pis]
                 logging.info(pi_dicts)
@@ -1227,13 +1228,23 @@ class ImagesByTagHandler(RequestHandlerParent):
             tags = Tag.all().filter('name_ref', uniqueTagName).order('date')
 
             pi_counts = [tag.count for tag in tags]
-            pis = PictureIndex.all().filter('count in', pi_counts)
+            if len(pi_counts) > 20:
+                pis = []
+                for pi_count in pi_counts:
+                    pi = PictureIndex.all().filter('count', pi_count).get()
+                    pis.append(pi)
+            else:
+                pis = PictureIndex.all().filter('count in', pi_counts).fetch()
 
+            pi_dicts = [pi.template_repr() for pi in pis]
+
+            logging.info('tag is %s', tag_name)
+            logging.info('pis are %s', pi_dicts)
             template_values = {
                 'current_index': 10, # why not?
                 'newest_index': highest_picture_index(),
                 'tag_name': tag_name,
-                'carousel_slides': pis,
+                'carousel_slides': pi_dicts,
             }
 
             outText = render_template_text('images_by_tag.html', template_values)
@@ -1243,7 +1254,8 @@ class ImagesByTagHandler(RequestHandlerParent):
             else:
                 logging.debug("memcaching was set in ImagesByTagHandler")
         else:
-            logging.info("memcaching worked in ImagesByTagHandler for %s" % memcache_name)
+            logging.info("memcaching worked in ImagesByTagHandler for %s" %
+                         memcache_name)
 
         self.writeOutput(outText)
 
@@ -1836,5 +1848,5 @@ def profile_main():
     print "</pre>"
 
 if __name__ == "__main__":
-    profile_main()
-    #real_main()
+    #profile_main()
+    real_main()

@@ -60,10 +60,24 @@
 
 
         {% if admin_flag %}
-          <li><a title="Upload new pictures" href="/showuploadpage"><span class="glyphicon glyphicon-cloud-upload"></span>
-          </a></li>
-          <li><a title="Admin Dashboard" href="https://appengine.google.com/dashboard?&app_id=s~surlyfritter-hrd"><span class="glyphicon glyphicon-cog"></span>
-          </a></li>
+            <span class="dropdown">
+                <button title="Admin" class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                    <span class="glyphicon glyphicon-cog">s</span>
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                    <li>
+                        <a title="Old Admin Dashboard" href="https://appengine.google.com/dashboard?&app_id=s~surlyfritter-hrd"><span class="glyphicon glyphicon-cog"></span></a>
+                    </li>
+                    <li>
+                        <a title="Developer's Console" href="https://console.developers.google.com/project/surlyfritter-hrd/appengine?src=acinvite&moduleId=default&duration=P30D"><span class="glyphicon glyphicon-cog"></span>+</a>
+                    <li>
+                </ul>
+            </span>
+
+          <li>
+            <a title="Upload new pictures" href="/showuploadpage"><span class="glyphicon glyphicon-cloud-upload"></span></a>
+          </li>
         {% endif %}
         <li>
           {% if url_linktext == "Login" %}
