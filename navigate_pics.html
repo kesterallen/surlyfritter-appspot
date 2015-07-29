@@ -1,7 +1,7 @@
 <html>
     <head>
         <title>Pictures Page</title>
-        
+
         {% include "cards.html" %}
 
         <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
@@ -16,7 +16,7 @@
         </script>
 
         <script>
-        
+
             function parseKeys(e) {
                 // Keynum: 37 is left arrow: back one pic
                 // Keynum: 39 is right arrow: forward one pic
@@ -48,7 +48,7 @@
         </script>
 
     </head>
-    
+
     <body onkeyup='parseKeys(event)'/>
         <a href="/">
             <div id="header">
@@ -63,8 +63,8 @@
                     <div class="col1">
 
                         <p align='center'>
-                            Picture 
-                            <span id='next_index'>{{current_index|add:"1"}}</span> 
+                            Picture
+                            <span id='next_index'>{{current_index|add:"1"}}</span>
                             of
                             <span id='maxindex'>{{newest_index|add:"1"}}</span>
                         </p>
@@ -87,7 +87,7 @@
                                 <a id="30monextlink" href='/timejump/{{current_index}}/2.5' >2.5 Years Later</a>
                             </span>
                         </p>
-            
+
                         <p align=center>
                             <a href="/carousel">Filmstrip View (20 random pics)</a>
                             <a href="/carousel/{{current_index}}">Filmstrip View (last 20 pics)</a>
@@ -104,20 +104,20 @@
                             <span style="float:left">{{picture_comments}}</span>
                             <span style="float:right">
                                 <!--{{thetags}}-->
-                                {% for tag in thetags %} 
+                                {% for tag in thetags %}
                                     <a href="/tag/{{tag}}" target="_blank">{{tag}}</a>
-                                {% endfor %} 
-                            </span> 
+                                {% endfor %}
+                            </span>
                         </p>
-                        
+
                         <p>
 
                         <!-- Display unique tags -->
-                        <hr> 
+                        <hr>
                         Tags:
                         <p>
-                        {% for tag in tags %} 
-                            {% if tag.tag_count > 45 %} 
+                        {% for tag in tags %}
+                            {% if tag.tag_count > 45 %}
                                 <span style="font-size:25px">
                             {% else %} {% if tag.tag_count > 30 %}
                                 <span style="font-size:17px">
