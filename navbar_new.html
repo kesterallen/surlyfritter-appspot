@@ -1,0 +1,138 @@
+<div class="navbar navbar-default" role="navigation">
+  <div class="container-fluid">
+
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="/">Miriam, Julia, and Linus Pics</a>
+    </div>
+
+    <div class="navbar-collapse collapse">
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+            <a title="Permalink for this page" href="/navperm/{{count_index}}">
+              <span class="hidden-lg">Permalink</span>
+              <span class="glyphicon glyphicon-link"></span>
+            </a>
+          </li> 
+        <li>
+          <a title="Permalink for this image" href="/imgperm/{{count_index}}">
+            <span class="hidden-lg">Image Permalink</span>
+            <span class="glyphicon glyphicon-link"></span>
+            <span class="glyphicon glyphicon-picture"></span>
+          </a>
+        </li>
+
+        <li>
+          <a title="Oldest picture" href="/nav/0">
+            <span class="hidden-lg">Oldest</span>
+            <span class="glyphicon glyphicon-backward"></span>
+          </a>
+        </li>
+        <li>
+          <a title="Previous picture" href="/nav/{{prev_index}}">
+            <span class="glyphicon glyphicon-chevron-left"></span>
+            Previous
+          </a>
+        </li>
+        <li>
+          <a title="Random picture" href="/nav/{{random_index}}">
+            <span class="hidden-lg">Random </span>?
+          </a>
+        </li>
+        <li>
+          <a title="Next picture" href="/nav/{{next_index}}">
+            Next
+            <span class="glyphicon glyphicon-chevron-right"></span>
+          </a>
+        </li>
+        <li>
+          <a title="Newest picture" href="/nav/{{newest_index}}">
+            <span class="hidden-lg">Newest</span>
+            <span class="glyphicon glyphicon-forward">
+          </a>
+        </li>
+
+        <li>
+          <a title="Time jump 2.5 years earlier" href="/timejump/{{current_index}}/-2.5">
+            <span class="hidden-lg">-2.5yr</span>
+            <span class="glyphicon glyphicon-backward"></span>
+            <span class="glyphicon glyphicon-time"></span>
+          </a>
+        </li>
+        <li>
+          <a title="Time jump one year earlier" href="/timejump/{{current_index}}/-1.0">
+            <span class="hidden-lg">-1.0yr</span>
+            <span class="glyphicon glyphicon-chevron-left"></span>
+            <span class="glyphicon glyphicon-time"></span>
+          </a>
+        </li>
+        <li>
+          <a title="Miri, Julia, and Linus at the same age" href="/same_age">
+            <span class="hidden-lg">Same Age</span>
+            <span class="glyphicon glyphicon-time"></span> =
+          </a>
+        </li>
+        <li>
+          <a title="Time jump one year later" href="/timejump/{{current_index}}/1.0">
+            <span class="hidden-lg">1.0yr</span>
+            <span  class="glyphicon glyphicon-time"></span>
+            <span class="glyphicon glyphicon-chevron-right"></span>
+          </a>
+        <li>
+        <li>
+          <a title="Time jump 2.5 years later" href="/timejump/{{current_index}}/2.5">
+            <span class="hidden-lg">2.5yr</span>
+            <span  class="glyphicon glyphicon-time"></span>
+            <span class="glyphicon glyphicon-forward"></span>
+          </a>
+        </li>
+
+        <li>
+          <a title="Ten random pictures" href="/carousel">
+            <span class="hidden-lg">10 Random</span>
+            <span class="glyphicon glyphicon-film"></span>?
+          </a>
+        </li>
+        <li>
+          <a title="The ten previous pictures" href="/carousel/{{count_index}}">
+            <span class="hidden-lg">10 Previous</span>
+            <span class="glyphicon glyphicon-film"></span>
+          </a>
+        </li>
+
+        {% if admin_flag %}
+          <li>
+            <a title="Old Admin Dashboard"
+               href="https://appengine.google.com/dashboard?&app_id=s~surlyfritter-hrd"
+            >
+              <span class="glyphicon glyphicon-cog"></span>
+            </a>
+          </li>
+          <li>
+            <a title="Developer's Console"
+               href="https://console.developers.google.com/project/surlyfritter-hrd/appengine?src=acinvite&moduleId=default&duration=P30D"
+            >
+              <span class="glyphicon glyphicon-cog"></span>+
+            </a>
+          </li>
+          <li>
+              <a title="Upload new pictures" href="/showuploadpage"><span class="glyphicon glyphicon-cloud-upload"></span></a>
+          </li>
+        {% endif %}
+        <li>
+          {% if url_linktext == "Login" %}
+            <a title="Log in" href="{{url}}"><span class="glyphicon glyphicon-log-in"></span></a>
+          {% else %}
+            <a title="Log out" href="{{url}}"><span class="glyphicon glyphicon-log-out"></span></a>
+          {% endif %}
+        </li>
+
+      </ul>
+    </div><!--/.navbar-collapse -->
+  </div>
+</div>

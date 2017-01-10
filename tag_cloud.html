@@ -3,11 +3,11 @@
 
     <div class="panel-heading">
       <h4 class="panel-title">
-        <a data-toggle="collapse" data-target="#collapseOne" href="#collapseOne">Tag Cloud</a>
+        <a data-toggle="collapse" data-target="#tag_cloud" href="#tag_cloud">Tag Cloud</a>
       </h4>
     </div>
 
-    <div id="collapseOne" class="panel-collapse collapse{% if admin_flag %} in{% endif %}">
+    <div id="tag_cloud" class="panel-collapse collapse{% if admin_flag %} in{% endif %}">
 
       <div class="panel-body">
         {% for tag in tags %}

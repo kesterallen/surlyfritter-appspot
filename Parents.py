@@ -4,6 +4,7 @@ from google.appengine.ext import webapp
 
 from DataModels import (Picture, PictureIndex, Greeting, UserFavorite,
                         PictureComment, UniqueTagName, Tag, str_to_dt)
+from utils import highest_picture_index
 
 class RequestHandlerParent(webapp.RequestHandler):
     """

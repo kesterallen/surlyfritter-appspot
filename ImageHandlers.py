@@ -8,6 +8,8 @@ from google.appengine.api import memcache
 
 from utils import (render_template_text, highest_index_value, 
                    highest_picture_index, highest_index_by_date)
+import re
+
 from Parents import RequestHandlerParent
 from TimeJumpHandlers import TimeJumpHandler, MiriTimeJumpHandler
 from DataModels import (Picture, PictureIndex, Greeting, UserFavorite,
@@ -182,7 +184,9 @@ class ImagesByTagHandler(RequestHandlerParent):
             else:
                 pis = PictureIndex.all().filter('count in', pi_counts)
 
+            # TODO add ordering here?
             pi_dicts = [pi.template_repr() for pi in pis]
+            pi_dicts.sort(key=lambda x: x['dateOrderIndex'])
 
             logging.info('tag is %s', tag_name)
             logging.info('pis are %s', pi_dicts)

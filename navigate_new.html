@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+{% include "header_new.html" %}
+{% include "cards.html" %}
+<title>Pictures Page</title>
+<style> 
+  .container-fluid {
+    text-align: center;
+  }
+</style>
+</head>
+
+<body>
+{% include "navbar_new.html" %}
+
+<div class="container-fluid">
+
+  <!-- Navigation buttons for mobile -->
+  <div class="row hidden-md hidden-lg">
+    <a class="btn btn-primary btn-xs" href="/nav/{{prev_index}}" role="button">
+      <div class="col-xs-5">
+        <span class="glyphicon glyphicon-chevron-left"></span> Previous
+      </div>
+    </a>
+    <a class="btn btn-primary btn-xs" href="/nav/{{random_index}}" role="button">
+      <div class="col-xs-2">
+         Random ?
+      </div>
+    </a>
+    <a class="right btn btn-primary btn-xs" href="/nav/{{next_index}}" role="button">
+      <div class="col-xs-5">
+        Next <span class="glyphicon glyphicon-chevron-right"></span>
+      </div>
+    </a>
+  </div>
+  <br class="hidden-md hidden-lg"/>
+  <div class="row hidden-xs hidden-sm">
+    <small>Use left / right arrows to go backwards / fowards in time, or the &lt; &gt; buttons above.</small>
+  </div>
+
+
+  <div class="row">
+    <div class="col-xs-12">
+      <a href="/img/{{slide.dateOrderIndex}}">
+        <img class="img-responsive center-block" src="{{slide.img_url}}" alt="{{slide.comments}}"/>
+      </a>
+      {{slide.dateOrderIndex|add:"1"}} {% if newest_index %} / {{newest_index|add:"1"}} {% endif %}
+      <br/>
+      {{slide.comments}}
+      <br/>
+      {% for tag in slide.tags %}<a href="/tag/{{tag}}">{{tag}} </a>{% endfor %} 
+      <br/>
+      {{slide.datetime}}
+    </div>
+  </div>
+  <br/>
+
+  <div class="row">
+    <div class="col-xs-6">
+      <form name="addtag" action="/addtag" method="post"> 
+        <div class="form-group">
+          <input type="hidden" name="count" value="{{current_index}}">
+          <input class="form-control" type="text" name="tag_name" placeholder="Add tags (comma-separated)">
+        </div>
+      </form> 
+    </div>
+
+    <div class="col-xs-6">
+      <form name="addcomment" action="/addcomment" method="post"> 
+        <div class="form-group">
+          <input type="hidden" name="current_index" value="{{current_index}}">
+          <input class="form-control" type="text" name="content" placeholder="Add a comment"></textarea> 
+        </div>
+      </form> 
+    </div>
+
+  </div>
+
+</div> <!-- /container -->
+
+{% include "tag_cloud.html" %}
+{% include "footer.html" %}
+<script>
+$(document).ready(function() {
+  //Flag to check if another key was pressed with alt
+  var wasAnotherKeyPressed = false;
+  var ALT_CODE = 18;
+
+  //When some key is pressed
+  $(window).keydown(function(event) {
+    //Identifies the key
+    var vkey = event.keyCode ? event.keyCode : event.which ? event.which : event.charCode;
+
+    //The last key pressed is alt or not? 
+    wasAnotherKeyPressed = vkey != ALT_CODE;
+
+    // If only alt:
+    if (wasAnotherKeyPressed) {
+      if (vkey == ALT_CODE) {
+        ;
+      } else {
+        if (vkey == 39) {
+          window.location = "/nav/{{next_index}}";
+        } else if (vkey == 37) {
+          window.location = "/nav/{{prev_index}}";
+        }
+      }
+    } 
+  });
+});
+</script>
+</body>
+</html>

@@ -34,6 +34,10 @@ handlers:
   static_files: static/better_than_reindeer.mp3
   upload: static/better_than_reindeer.mp3
 
+- url: /movie
+  static_files: static/movie.html
+  upload: static/movie.html
+
 - url: /resume
   static_files: static/resume.html
   upload: static/resume.html
@@ -42,11 +46,11 @@ handlers:
   script: flashcards.py
 
 - url: /_ah/mail/.+ 
-  script: DisplayNew.py 
+  script: Display.py 
   login: admin
 
 - url: /.*
-  script: DisplayNew.py
+  script: Display.py
 
 inbound_services:
 - mail

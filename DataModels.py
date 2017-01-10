@@ -152,17 +152,21 @@ class Picture(db.Model):
         #TODO: use the exiv data to resize the images to a consistent max size (1200?)?
         if self.picture is not None:
             image = self.picture
+            is_blob_image = False
             logging.debug("getRotatedImage: image is from self.picture")
         elif self.blobStorePictureKey is not None:
             blob_reader = blobstore.BlobReader(self.blobStorePictureKey)
             image = blob_reader.read()
+            is_blob_image = True
             logging.debug("getRotatedImage: image is a blobstore image")
         else:
             logging.debug("getRotatedImage: NO IMAGE")
+            raise ValueError("no image in getRotatedImage")
 
         exivTags = self.getExivTags(image)
 
 
+        #TODO: if "Image Orientation" in exivTags and not is_blob_image: ?
         if "Image Orientation" in exivTags:
             logging.debug("image orientation is in exivTags")
             orientation = str(exivTags["Image Orientation"])

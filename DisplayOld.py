@@ -31,30 +31,12 @@ from google.appengine.ext.webapp.mail_handlers import InboundMailHandler
 from google.appengine.runtime.apiproxy_errors import OverQuotaError
 from google.appengine.runtime import DeadlineExceededError
 
-from Parents import RequestHandlerParent
-
-from TimeJumpHandlers import (TimeJumpHandler, NavigateByDateHandler,
-                              MiriTimeJumpHandler, JuliaTimeJumpHandler,
-                              LinusTimeJumpHandler, SameAgeJumpHandler,
-                              DAYS_IN_YEAR, SECS_IN_YEAR)
-
-from ImageHandlers import (ReplaceImageHandler, ImageServingUrl,
-                           ImageParent, ImageByDateHandler,
-                           ImageByJpgIndexHandler, ImageByNameHandler,
-                           ImageByOrderAddedHandler, ImageByIndexHandler,
-                           FilmstripHandler, ImagesByTagHandler)
-
 from DataModels import (Picture, PictureIndex, Greeting, UserFavorite,
                         PictureComment, UniqueTagName, Tag, str_to_dt)
 
-from utils import (render_template_text, highest_index_value,
-                   highest_picture_index, highest_index_by_date,
-                   cn_hpi, cn_hpi_date)
-
 DEFAULT_SLIDE_COUNT = 4
 
-GCS_BUCKET_NAME = os.environ.get('BUCKET_NAME',
-                                 app_identity.get_default_gcs_bucket_name())
+GCS_BUCKET_NAME = os.environ.get('BUCKET_NAME', app_identity.get_default_gcs_bucket_name())
 GCS_BUCKET = '/' + GCS_BUCKET_NAME
 
 AUTHORIZED_UPLOADERS = ["Kester Allen <kester@gmail.com>",
@@ -65,6 +47,10 @@ NOTIFICATION_RECEIVER = "kester@gmail.com, apaske@gmail.com"
 BLOBSTORE_UPLOAD_DEFAULT = True
 MAX_IMAGE_UPLOAD_SIZE = 1000000 #  1 MB
 MAX_TRANSACTION_SIZE = 10000000 # 10 MB
+cn_hpi  = "highestPictureIndex"
+cn_hpi_date = "highestPictureIndexByDate"
+DAYS_IN_YEAR = 365.25
+SECS_IN_YEAR = DAYS_IN_YEAR * 3600 * 24
 
 
 # Functions:
@@ -72,6 +58,48 @@ MAX_TRANSACTION_SIZE = 10000000 # 10 MB
 def get_date_for_slides(pi_count, is_compact=True):
     date = DateByIndexHandler().getText(pi_count, is_compact)
     return date
+
+def render_template_text(template_fname, values_to_insert):
+    rendered_text = template.render(
+                            os.path.join(
+                                os.path.dirname(__file__),
+                                template_fname),
+                            values_to_insert
+                    )
+    return rendered_text
+
+def highest_index_value(memcache_name, field_name):
+    index = memcache.get(memcache_name)
+
+    if index is None:
+        logging.info("Running highest picture index retrieve")
+        highest_pi = PictureIndex.all(
+                                ).order('-%s' % field_name
+                                ).get()
+        if highest_pi:
+            index = getattr(highest_pi, field_name)
+            logging.info("highest picture index is %s" % index)
+        else:
+            index = 0
+            logging.info("highest picture index is zero");
+
+        logging.debug("memcaching the highestPictureIndex result "
+                      "for memcache_name: %s, %s" %
+                      (memcache_name, index))
+        memcacheStatus = memcache.set(memcache_name, index)
+        if not memcacheStatus:
+            logging.debug("memcaching failed in highestPictureIndex")
+    else:
+        logging.debug("memcache worked highestPictureIndex result for "
+                      "memcache_name: %s, %s" %
+                      (memcache_name, index))
+    return index
+
+def highest_picture_index():
+    return highest_index_by_date()
+
+def highest_index_by_date():
+    return highest_index_value(cn_hpi_date, 'dateOrderIndex')
 
 def notification_email_html(subject, body, html=None, to=None):
     sender = NOTIFICATION_SENDER
@@ -136,10 +164,7 @@ def add_picture(image, name, isBlobstore=BLOBSTORE_UPLOAD_DEFAULT):
     if not memcacheStatus:
         logging.debug("memcaching for dateOrderIndex failed in add_picture")
 
-    pictureIndex = PictureIndex.make_picture_index(picture,
-                                                   count,
-                                                   dateOrderIndex,
-                                                   dateOrderString)
+    pictureIndex = PictureIndex.make_picture_index(picture, count, dateOrderIndex, dateOrderString)
     pictureIndex.put()
     logging.info("done PictureIndex add in add_picture")
 
@@ -174,6 +199,315 @@ def get_date_order_string(count, rawDate=None):
 
 # Operations classes:
 #
+class ReplaceImageHandler(webapp.RequestHandler):
+    def get(self):
+        template_text = render_template_text('replace_picture.html', {})
+        self.response.out.write(str(template_text))
+
+    def post(self):
+        count = int(self.request.get('count'))
+        new_pic = self.request.POST.get('file_to_upload').file.read()
+
+        #TODO: remove old Picture object (and blob if applicable):
+        picture_index = PictureIndex.all().filter('count', count).get()
+        picture_index.pix_ref.setPicture(new_pic)
+        picture_index.pix_ref.put()
+
+        memcache.flush_all()
+        self.response.out.write(str("uploaded new pic to %s" % count))
+
+class RequestHandlerParent(webapp.RequestHandler):
+    """
+    This parent class encapsulates extracting the index value from the HTTP
+    request.
+    """
+
+    def writeOutput(self, content):
+        """
+        The self.response.out.write requires str inputs. Encapsulating that
+        here.
+        """
+        try:
+            self.response.out.write(str(content))
+        except (AssertionError, UnicodeEncodeError) as uee:
+            logging.debug(uee)
+            logging.debug("content is: \n%s" % content)
+            mangled_content = content.encode('ascii', 'ignore')
+            logging.debug("mangled content is: \n%s" % mangled_content)
+            self.response.out.write(mangled_content)
+
+    def getIndex(self, indexName, check_bounds=True):
+        indexString = self.request.get(indexName)
+        index = self.getIndexRaw(indexString, check_bounds)
+        return index
+
+    def validate_index(self, index, check_bounds):
+        if index is None:
+            imgindex = self.getIndex('index', check_bounds=check_bounds)
+            if not imgindex:
+                imgindex = highest_picture_index()
+        else:
+            try:
+                imgindex = int(index)
+            except:
+                logging.debug("Can't convert %s to an int. Passing in 0" % index)
+                imgindex = highest_picture_index()
+        return imgindex
+
+    def getIndexRaw(self, indexString, check_bounds=True):
+        if indexString:
+            index = int(indexString)
+        else:
+            index = 0
+
+        if check_bounds:
+            highest = highest_picture_index()
+            if index > highest:
+                index = highest
+
+        return index
+
+class ImageServingUrl(webapp.RequestHandler):
+    def get(self, index=None):
+        pi = PictureIndex.get(index, byDate=False)
+        self.response.out.write(pi.img_url)
+
+class ImageParent(RequestHandlerParent,
+                  blobstore_handlers.BlobstoreDownloadHandler):
+    """
+    This parent class encapsulates writing the image out to the HTTP response.
+    It is a RequestHandlerParent child class because it needs the self.response
+    member.
+    """
+    def _handleImageInternal(self, picture):
+        if picture:
+            if picture.is_good:
+                self.response.headers['Content-Type'] = "image/jpg"
+                self.writeOutput(picture.getImage())
+            else:
+                logging.debug('404ing -- no image in Picture object')
+                self.error(404)
+        else:
+            logging.debug('404ing -- no Picture entity')
+            self.error(404)
+
+    def handleImageByName(self, name):
+        picture = Picture.all().filter('name', name).get()
+        self._handleImageInternal(picture)
+
+    def handleImage(self, index, by_date=True):
+        index = self.validate_index(index, check_bounds=by_date)
+
+        pictureIndex = PictureIndex.get(index=index, by_date=by_date)
+        if pictureIndex is None:
+            self.writeOutput("Picture indexing error for index %s!" % index)
+        else:
+            picture = pictureIndex.pix_ref
+            self._handleImageInternal(picture)
+
+class TimeJumpHandler(RequestHandlerParent):
+
+    def get_index_from_date(self, date_str):
+        """Take an input date string of the form 'YYYY:MM:DD hh:mm:ss' and
+        return the dateOrderIndex of the closest PictureIndex before it."""
+
+        dateparts = re.split('\W+', date_str)
+        if len(dateparts) < 4:
+            date = ":".join(dateparts)
+        else:
+            date = "%s %s" % (":".join(dateparts[0:3]), ":".join(dateparts[3::]))
+
+
+        pi = PictureIndex.all(
+                        ).filter("dateOrderString >", date
+                        ).order("dateOrderString").get()
+        if pi is None:
+            pi = PictureIndex.all(
+                            ).filter("dateOrderString <=", date
+                            ).order("-dateOrderString").get()
+        if pi is None:
+            return None
+        else:
+            logging.info("get_index_from_date results %s" % pi)
+            return pi
+
+    def get_shifted_datetime(self, start_date, shift_years):
+        shift_years = float(shift_years)
+
+        logging.info('raw date in get_shifted_date: %s' % start_date)
+
+        timedelta = datetime.timedelta(days=DAYS_IN_YEAR*shift_years)
+        shifted_datetime = str_to_dt(start_date) + timedelta
+        return shifted_datetime
+
+    def get_shifted_date(self, start_date, shift_years):
+        """Take an input date string of the form 'YYYY:MM:DD hh:mm:ss', shift
+        it by shift_years, and return the new data in the form
+        'YYYY:MM:DD hh:mm:ss'.
+
+        Args:
+            start_date  -- A string date in the form YYYY:MM:DD hh:mm:ss
+            shift_years -- The number of years to shift. Can be specified as
+                           string, float, or int, but must be able to survive a
+                           float() conversion.
+        """
+        shifted_datetime = self.get_shifted_datetime(start_date, shift_years)
+        shifted_time = shifted_datetime.strftime("%Y:%m:%d %H:%M:%S")
+        logging.info('final date in get_shifted_date: %s' % shifted_time)
+
+        return shifted_time
+
+    def get_shifted_index(self, index, shift_years):
+        """Generate a new PictureIndex.dateOrderIndex which is the picture in
+        the date sequence before the date corresponding to:
+            (date of 'index')+shift_years
+        If that is not a valid picture (before the first date) take the first
+        picture AFTER that date.
+        """
+
+        if index is None:
+            index = self.getIndex('index')
+
+        current_pi = PictureIndex.get(index=index)
+        if current_pi is None:
+            return highest_picture_index()
+
+        current_date = current_pi.pix_ref.getDateRaw()
+        shifted_date = self.get_shifted_date(current_date, shift_years)
+        picture_index = self.get_index_from_date(shifted_date)
+        if picture_index:
+            return picture_index.dateOrderIndex
+        else:
+            return highest_picture_index()
+
+    def jump_to_filmstrip(self, index=None, shift_years=None):
+        """Redirect to the URL which displays, as its middle picture, the
+        filmstrip containing the picture which is shift_years after index.
+        The filstrip is 20 pictures long, and goes backwards, so a postive
+        10 shift is needed to center the wanted date in the middle."""
+        if shift_years:
+            shifted_index = self.get_shifted_index(index, shift_years)
+        else:
+            shifted_index = index
+        start_index = shifted_index + 10
+        if start_index < 0:
+            start_index = 0
+        if start_index > highest_picture_index():
+            start_index = highest_picture_index()
+        self.redirect('/filmstrip/%d' % start_index)
+
+    def jump_to_filmstrip_date(self, date=None, shift_years=None):
+        """Redirect to the URL which displays, as its middle picture, the
+        filmstrip containing the picture which is shift_years after date.
+        The filstrip is 20 pictures long, and goes backwards, so a postive
+        10 shift is needed to center the wanted date in the middle."""
+        shifted_date = self.get_shifted_date(date, shift_years)
+        shifted_index = self.get_index_from_date(shifted_date).dateOrderIndex
+        self.jump_to_filmstrip(shifted_index, shift_years=None)
+
+    def jump_to(self, index=None, shift_years=None):
+        """Redirect to the URL which displays the picture which is shift_years
+        after index."""
+        shifted_index = self.get_shifted_index(index, shift_years)
+        self.redirect('/nav/%d' % shifted_index)
+
+    def jump_to_date(self, date=None, shift_years=None):
+        shifted_date = self.get_shifted_date(date, shift_years)
+        shifted_index = self.get_index_from_date(shifted_date).dateOrderIndex
+        self.jump_to(shifted_index, shift_years=None)
+
+    def get(self, index=None, years=None):
+        """Redirect to the picture closest to 'years' from the current ('index')
+        picture"""
+        try:
+            index = int(float(index))
+        except:
+            try:
+                index = int(float(self.request.get('current_index')))
+            except:
+                index = 666
+                logging.debug(
+                    "Something wrong in index read in TimeJumpHandler.get")
+
+        try:
+            years = float(years)
+        except:
+            try:
+                years = float(self.request.get('years'))
+            except:
+                years = -1
+
+        logging.debug("years in TimeJump.get %s" % years)
+        self.jump_to(index, years)
+
+    def post(self):
+        #TODO
+        self.redirect('/highestindex')
+
+class NavigateByDateHandler(TimeJumpHandler):
+    def get(self, date_str=None):
+        picture_index = self.get_index_from_date(date_str)
+        self.redirect('/navperm/%d' % picture_index.count)
+
+class ImageByDateHandler(TimeJumpHandler):
+    def get(self, date_str=None):
+        picture_index = self.get_index_from_date(date_str)
+        self.redirect('/imgperm/%d' % picture_index.count)
+
+class MiriTimeJumpHandler(TimeJumpHandler):
+    """Handles time jump requests of the form /miri_is/<years>, and serves
+    the picture at which Miri is <years> old.
+    """
+    birth_date= '2007:10:26 05:30:00'
+    def post(self):
+        """No post for now"""
+        self.error(404)
+
+    def get(self, years='1'):
+        """Redirect to the picture at which Miri is 'years' old."""
+        years = float(years)
+        shifted_date = self.get_shifted_date(self.birth_date, years)
+        shifted_index = self.get_index_from_date(shifted_date).dateOrderIndex
+        self.redirect('/nav/%d' % shifted_index)
+
+    @classmethod
+    def seconds_since_birth(cls):
+        """Return the number of seconds between now and cls.birth_date"""
+        birth_date = str_to_dt(cls.birth_date)
+        timedelta = datetime.datetime.now() - birth_date
+        return float(timedelta.total_seconds())
+
+    @classmethod
+    def years_since_birth(cls):
+        """Return the float number of years since birth."""
+        yearsdelta = cls.seconds_since_birth() / SECS_IN_YEAR
+        return yearsdelta
+
+    @classmethod
+    def random_datetime_since_birth(cls):
+        """Return random datetime between now and birth."""
+        rand_secs = random.uniform(0, cls.seconds_since_birth())
+        delta = datetime.timedelta(seconds=rand_secs)
+
+        rand_dt = str_to_dt(cls.birth_date) + delta
+        return rand_dt
+
+class JuliaTimeJumpHandler(MiriTimeJumpHandler):
+    """Handles time jump requests of the form /julia_is/<years>, and serves the
+    picture at which Julia is <years> old.
+
+    Inherits get and post from MiriTimeJumpHandler
+    """
+    birth_date= '2010:04:21 07:30:00'
+
+class LinusTimeJumpHandler(MiriTimeJumpHandler):
+    """Handles time jump requests of the form /julia_is/<years>, and serves the
+    picture at which Linusis <years> old.
+
+    Inherits get and post from MiriTimeJumpHandler
+    """
+    birth_date= '2015:04:17 07:30:00'
+
 class SideBySideHandler(RequestHandlerParent):
     def get(self, counts_from_request='/600/601'):
         """
@@ -204,56 +538,79 @@ class SideBySideHandler(RequestHandlerParent):
                 logging.info("skipping null picture_index %s" % count_index)
 
 
-        template_values = { 'pics': pics,
-                            'count_index': pics[0]['picture_index'].count,
-                          }
-        template_text = render_template_text('side_by_side.html',
-                                             template_values)
-        self.write_output(template_text)
+        template_values = { 'pics': pics, 'count_index': pics[0]['picture_index'].count, }
+        template_text = render_template_text('side_by_side.html', template_values)
+        self.writeOutput(template_text)
+
+class SameAgeJumpHandler(TimeJumpHandler):
+    def get(self, years_old=None):
+        """
+        Generate a side-by-side picture of the kids at the same age. A
+        blank 'years_old' arg will generate a random age and display that.
+        """
+        if years_old is None:
+            julia_age = JuliaTimeJumpHandler.years_since_birth()
+            years_old = random.uniform(0, JuliaTimeJumpHandler.years_since_birth())
+        else:
+            years_old = float(years_old)
+
+        pis = []
+        for kid in [MiriTimeJumpHandler, JuliaTimeJumpHandler, LinusTimeJumpHandler]:
+            dt = self.get_shifted_datetime(kid.birth_date, years_old)
+            pi = self.get_index_from_date(dt.strftime("%Y:%m:%d %H:%M:%S"))
+            logging.info(
+                'birthday %s, shifted date %s, shift in years %s, index %s' %
+                (kid.birth_date, dt, years_old, pi.dateOrderIndex)
+            )
+            pis.append(pi)
+
+        self.redirect('/side_by_side/%s/%s/%s' % (pis[0].count,
+                                                  pis[1].count,
+                                                  pis[2].count))
 
 class GetDateOrderString(RequestHandlerParent):
     def get(self):
-        index = self.get_index_from_request()
+        index = self.getIndex('index', check_bounds=False)
         pictureIndex = PictureIndex.get(index, by_date=False)
-        self.write_output("date order string is %s" %
+        self.writeOutput("date order string is %s" %
                          pictureIndex.dateOrderString)
 
 class DateOrderIndexByCountHandler(RequestHandlerParent):
     def get(self):
-        index = self.get_index_from_request()
+        index = self.getIndex('index', check_bounds=False)
         pictureIndex = PictureIndex.get(index, by_date=False)
-        self.write_output(pictureIndex.dateOrderIndex)
+        self.writeOutput(pictureIndex.dateOrderIndex)
 
 class CountByDateOrderIndexHandler(RequestHandlerParent):
     def get(self):
-        index = self.get_index_from_request()
+        index = self.getIndex('index', check_bounds=False)
         pictureIndex = PictureIndex.get(index, by_date=True)
-        self.write_output(pictureIndex.count)
+        self.writeOutput(pictureIndex.count)
 
 class AddDateOrderString(RequestHandlerParent):
     def get(self):
-        index = self.get_index_from_request()
+        index = self.getIndex('index')
 
         logging.info("index: %s" % index)
-        self.write_output("index: %s" % index)
+        self.writeOutput("index: %s" % index)
         pictureIndex = PictureIndex.all().filter('count', index).get()
         logging.info("index: %s" % pformat(pictureIndex))
         if pictureIndex is None:
-            self.write_output("no picture index!")
+            self.writeOutput("no picture index!")
             return
 
-        self.write_output(pformat(pictureIndex))
+        self.writeOutput(pformat(pictureIndex))
         dateOrderString = get_date_order_string(index)
         pictureIndex.dateOrderString = dateOrderString
         pictureIndex.put()
-        self.write_output("added %s" % dateOrderString)
+        self.writeOutput("added %s" % dateOrderString)
 
 # pictureIndex.count 22 should be dateOrderIndex 0
 # pictureIndex.count 0 should be dateOrderIndex 1
 class SetDateOrderIndexHandler(RequestHandlerParent):
     def get(self):
-        count = self.get_index_from_request('count')
-        dateOrderIndex = self.get_index_from_request('dateorderindex')
+        count = self.getIndex('count', check_bounds=False)
+        dateOrderIndex = self.getIndex('dateorderindex', check_bounds=False)
         logging.info("setting PictureIndex count %s to dateOrderIndex %s" %
                      (count, dateOrderIndex))
         pictureIndex = PictureIndex.get(index=count, by_date=False)
@@ -284,24 +641,23 @@ class HighestIndexHandler(RequestHandlerParent):
                highest_index_value(cn_hpi , 'count'),
                highest_index_value(cn_hpi_date, 'count')))
 
-        self.write_output(text)
+        self.writeOutput(text)
 
 class MakeFavoritesPage(RequestHandlerParent):
     def post(self):
         user = users.get_current_user()
-        user_favorites = UserFavorite.all().filter('user =', user).order('-date')
+        user_favorites = UserFavorite.all().filter('user = ', user).order('-date')
 
         template_values = {
             'user': user,
             'user_favorites': user_favorites,
         }
 
-        template_text_navbar = render_template_text('navbar.html',
-                                                    template_values)
+        template_text_navbar = render_template_text('navbar.html', template_values)
         template_values['navbar'] = template_text_navbar
 
         template_text = render_template_text('user_page.html', template_values)
-        self.write_output(template_text)
+        self.writeOutput(template_text)
 
 class StartSlideShow(RequestHandlerParent):
     def post(self):
@@ -339,7 +695,7 @@ class AddTag(RequestHandlerParent):
         tag_text = self.request.get('tag_name')
         tag_names = re.sub('[^,\w]', ' ', tag_text).split(',')
         tag_names = set([tag_name.strip().lower() for tag_name in tag_names])
-        date_order_index = self.get_index_from_request('count')
+        date_order_index = self.getIndex('count', check_bounds=False)
         count = PictureIndex.dateOrderIndexToCount(date_order_index)
 
         for tag_name in tag_names:
@@ -399,8 +755,7 @@ class AddComment(RequestHandlerParent):
         if users.get_current_user():
             picture_comment.author = users.get_current_user()
 
-        dateOrderIndex = self.get_index_from_request('current_index',
-                                                     check_bounds=True)
+        dateOrderIndex = self.getIndex('current_index')
         count = PictureIndex.dateOrderIndexToCount(dateOrderIndex)
 
         picture_comment.content = self.request.get('content')
@@ -436,7 +791,7 @@ class FeedHandler(RequestHandlerParent):
                                      "order by dateOrderIndex DESC limit 5")
         template_values = { 'picture_indexes': pictureIndexes }
         template_text = render_template_text('feed.xml', template_values)
-        self.write_output(template_text)
+        self.writeOutput(template_text)
 
 class ShowUploadPage(RequestHandlerParent):
     def get(self):
@@ -450,9 +805,8 @@ class ShowUploadPage(RequestHandlerParent):
                 'welcome_text': welcome_text,
             }
 
-            template_text = render_template_text('upload_pictures.html',
-                                                 template_values)
-            self.write_output(template_text)
+            template_text = render_template_text('upload_pictures.html', template_values)
+            self.writeOutput(template_text)
         else:
             self.redirect('/')
 
@@ -538,7 +892,7 @@ class NavigatePictures(RequestHandlerParent):
             # Bail out if there are no pics:
             #
             if highest_picture_index() < 0:
-                self.write_output("no pictures!")
+                self.writeOutput("no pictures!")
                 return
 
             #Determine login and admin status:
@@ -596,7 +950,7 @@ class NavigatePictures(RequestHandlerParent):
                 logging.info("count_index is %s, thedate is %s", count_index, thedate)
 
                 pi_dicts = [pi.template_repr() for pi in pis]
-                logging.info("DisplayNew.py")
+                logging.info("Display.py")
                 logging.info(pi_dicts)
                 template_values = {
                     'carousel_slides':  pi_dicts,
@@ -627,10 +981,10 @@ class NavigatePictures(RequestHandlerParent):
             else:
                 logging.debug("memcaching.get worked for template_text")
 
-            self.write_output(template_text)
+            self.writeOutput(template_text)
         except OverQuotaError as oqe:
             template_text = render_template_text('over_quota.html', {})
-            self.write_output(template_text)
+            self.writeOutput(template_text)
             return
 
     def get_indices_with_index(self, index):
@@ -746,6 +1100,65 @@ class NavigatePictures(RequestHandlerParent):
 
         return prev_index
 
+class FilmstripHandler(ImageParent):
+    def get_filmstrip_indices(self, num_pics, current_index=None):
+        """
+        Get the PictureIndex objects for a filmstrip.
+
+        If current_index is specified, return the num_pics previous pictures
+        (including current_index). If current_index is None, return a random
+        set of pictures, taken from a uniformly-sampled set of timepoints
+        instead of a random set of indices. Random indices, which I had
+        previously, favor times with more pictures in them.
+        """
+
+        is_random = (current_index is None)
+        if is_random:
+            tjh = TimeJumpHandler()
+            pis = []
+            for i in range(num_pics):
+                rand_dt = MiriTimeJumpHandler.random_datetime_since_birth()
+                index = tjh.get_index_from_date(str(rand_dt))
+                pis.append(index)
+        else:
+            indices = [current_index-i for i in range(num_pics)]
+            pis = [PictureIndex.get(index, by_date=False) for index in indices]
+
+        return pis
+
+    def get_filmstrip_html(self, current_index, num_pics=20):
+        num_pics_request= self.request.get('slidecount')
+        if num_pics_request:
+            num_pics = int(float(num_pics_request))
+
+        logging.info("num_pics = %s" % num_pics)
+        pictureIndices = []
+
+        for index in self.get_filmstrip_indices(num_pics, current_index):
+            if pi:
+                logging.info("PictureIndex.get(%d) returns %s" % (index, pi))
+                count = PictureIndex.dateOrderIndexToCount(index)
+                tmpText = "%s %s %s" % (PictureComment.getCommentsString(count),
+                                        get_date_for_slides(count),
+                                        " ".join(Tag.getTagNames(count)))
+                pi.comment = tmpText
+                pictureIndices.append(pi)
+
+        template_values = {
+            'pics': pictureIndices,
+            'displaywidth': 640,
+            'pictureheight': 900,
+            'containerheight': 900+160,
+        }
+        template_text = render_template_text('filmstrip.html', template_values)
+        return template_text
+
+    def get(self, index=None):
+        if index is not None:
+            index = int(index)
+        templateText = self.get_filmstrip_html(current_index=index)
+        self.writeOutput(templateText)
+
 class CarouselHandler(FilmstripHandler):
     def get(self, index=None, num_pics=10):
         if index is not None:
@@ -763,25 +1176,96 @@ class CarouselHandler(FilmstripHandler):
                                 'dont_lazyload': True,
                             }
                         )
-        self.write_output(template_text)
+        self.writeOutput(template_text)
+
+class ImageByJpgIndexHandler(ImageParent):
+    def get(self):
+        url = self.request.url
+        m = re.search('\D*(\d+)\.jpg', url)
+        if m is None:
+            self.error(404)
+            return
+        count = self.getIndexRaw(m.group(1), check_bounds=False)
+
+        self.handleImage(count, by_date=False)
+
+class ImageByNameHandler(ImageParent):
+    def get(self, name=None):
+        self.handleImageByName(name)
+
+class ImageByOrderAddedHandler(ImageParent):
+    def get(self, index=None):
+        check_bounds = False
+        self.handleImage(index, by_date=check_bounds)
+
+class ImageByIndexHandler(ImageParent):
+    def get(self, index=None):
+        check_bounds = True
+        self.handleImage(index, by_date=check_bounds)
 
 class ExivByIndexHandler(RequestHandlerParent):
     def get(self):
-        index = self.get_index_from_request(check_bounds=True)
+        index = self.getIndex('index')
         picture_index = PictureIndex.get(index=index)
         exivTags = "<pre>%s</pre>" % pformat(picture_index.pix_ref.getExivTags())
         try:
-            self.write_output(exivTags)
+            self.writeOutput(exivTags)
         except:
             outtext = "error in exiv handler for index %d, %s" % (
                         index, str(exivTags["Image Model"]))
-            self.write_output(outtext)
+            self.writeOutput(outtext)
+
+class ImagesByTagHandler(RequestHandlerParent):
+    def get(self, tag_name=None):
+        if tag_name is None:
+            tag_name = self.request.get('tag')
+        isDesc = 'asc' != str(self.request.get('order'))
+        memcache_name = "memcache tag %s %s" % (tag_name, isDesc)
+        #memcache_name = get_memcache_name(ImagesByTagHandler,
+        #                                 tagName=tag_name,
+        #                                 isDesc=isDesc)
+        outText = memcache.get(memcache_name)
+        if outText is None:
+            uniqueTagName = UniqueTagName.all().filter('name', tag_name).get()
+            tags = Tag.all().filter('name_ref', uniqueTagName).order('date')
+
+            pi_counts = [tag.count for tag in tags]
+            if len(pi_counts) > 20:
+                pis = []
+                for pi_count in pi_counts:
+                    pi = PictureIndex.all().filter('count', pi_count).get()
+                    pis.append(pi)
+            else:
+                pis = PictureIndex.all().filter('count in', pi_counts)
+
+            pi_dicts = [pi.template_repr() for pi in pis]
+
+            logging.info('tag is %s', tag_name)
+            logging.info('pis are %s', pi_dicts)
+            template_values = {
+                'current_index': 10, # why not?
+                'newest_index': highest_picture_index(),
+                'tag_name': tag_name,
+                'carousel_slides': pi_dicts,
+            }
+
+            outText = render_template_text('images_by_tag.html', template_values)
+            memcacheStatus = memcache.set(memcache_name, outText)
+            if not memcacheStatus:
+                logging.debug("memcaching failed in ImagesByTagHandler")
+            else:
+                logging.debug("memcaching was set in ImagesByTagHandler")
+        else:
+            logging.info("memcaching worked in ImagesByTagHandler for %s" %
+                         memcache_name)
+
+        self.writeOutput(outText)
 
 class UpdateTagCountsHandler(RequestHandlerParent):
     def get(self):
         UniqueTagName.updateTagCounts()
         tag_counts = UniqueTagName.getTagCounts()
-        self.write_output(pformat(tag_counts))
+        self.writeOutput(pformat(tag_counts))
 
 class TagCloudHandler(RequestHandlerParent):
     @classmethod
@@ -816,19 +1300,19 @@ class TagCloudHandler(RequestHandlerParent):
     def get(self):
         unique_tags = TagCloudHandler.get_cloud_tags()
         text = render_template_text('tag_cloud.html', {'tags': unique_tags})
-        self.write_output(text)
+        self.writeOutput(text)
 
 class TagsByIndexHandler(RequestHandlerParent):
     def get(self):
-        count = self.get_index_from_request('count', check_bounds=True)
+        count = self.getIndex('count')
         tagNames = Tag.getTagNames(count)
-        self.write_output(tagNames)
+        self.writeOutput(tagNames)
 
 class TagsByNameHandler(RequestHandlerParent):
     def get(self):
         name = self.request.get('name')
         tags = Tag.getIndicesByName(name)
-        self.write_output(tags)
+        self.writeOutput(tags)
 
 class CommentByIndexHandler(RequestHandlerParent):
     def getText(self, count):
@@ -840,7 +1324,7 @@ class CommentByIndexHandler(RequestHandlerParent):
         return outText
 
     def get(self):
-        self.write_output(self.getText())
+        self.writeOutput(self.getText())
 
 class DateByIndexHandler(RequestHandlerParent):
     def getText(self, count, is_compact=False):
@@ -858,7 +1342,7 @@ class DateByIndexHandler(RequestHandlerParent):
     def get(self):
         date = self.getText()
         if date is not None:
-            self.write_output("<small>" + date + "</small>")
+            self.writeOutput("<small>" + date + "</small>")
         else:
             self.error(404)
 
@@ -933,7 +1417,7 @@ class DeleteOrphanBlobsHandler(OrphanHandler):
         try:
             self.get_orphan_blobs()
         except DeadlineExceededError as dee:
-            self.write_output(
+            self.writeOutput(
                 "Deadline Exceeded: %s orphan blobs to delete." %
                 (len(self.orphan_blobs)))
         finally:
@@ -947,7 +1431,7 @@ class DeleteOrphanPicturesHandler(OrphanHandler):
         try:
             self.get_orphan_pictures()
         except DeadlineExceededError as dee:
-            self.write_output(
+            self.writeOutput(
                 "Deadline Exceeded: %s orphan pictures to delete." %
                 (len(self.orphan_pictures)))
         finally:
@@ -963,9 +1447,9 @@ class CountOrphanBlobsHandler(OrphanHandler):
             self.get_orphan_blobs()
             msg = "%d Orphan blobs" % (len(self.orphan_blobs))
             logging.info(msg)
-            self.write_output(msg)
+            self.writeOutput(msg)
         except DeadlineExceededError as dee:
-            self.write_output(
+            self.writeOutput(
                 "Deadline Exceeded: %s orphan blobs found so far." %
                 (len(self.orphan_blobs)))
             return
@@ -977,9 +1461,9 @@ class CountOrphanPicturesHandler(OrphanHandler):
             self.get_orphan_pictures()
             msg = "%d Orphan pictures with offset %s" % (len(self.orphan_pictures), offset)
             logging.info(msg)
-            self.write_output(msg)
+            self.writeOutput(msg)
         except DeadlineExceededError as dee:
-            self.write_output(
+            self.writeOutput(
                 "Deadline Exceeded: %s orphan pictures found so far." %
                 (len(self.orphan_pictures)))
             return
@@ -991,9 +1475,9 @@ class AdoptOrphanPicturesHandler(OrphanHandler):
             self.adopt_orphan_pictures(limit)
             msg = "%d Orphan pictures adopted" % (len(self.orphan_pictures))
             logging.info(msg)
-            self.write_output(msg)
+            self.writeOutput(msg)
         except DeadlineExceededError as dee:
-            self.write_output(
+            self.writeOutput(
                 "Deadline Exceeded: %s orphan pictures adopted so far." %
                 (len(self.orphan_pictures)))
             return
@@ -1018,7 +1502,7 @@ class OrphanPicturesHandler(OrphanHandler):
 
         self.response.headers['Content-Type'] = "image/jpg"
         picture = self.orphan_pictures[int(pic_to_show)]
-        self.write_output(picture.getImage())
+        self.writeOutput(picture.getImage())
 
         msg = "%d Orphan pics" % (len(self.orphan_pictures))
         logging.info(msg)
@@ -1037,7 +1521,7 @@ class MetaDataHandler(RequestHandlerParent):
     """Return a JSON object of all the image's metadata"""
     def get(self, added_order_index=None):
         if added_order_index is None:
-            added_order_index = self.get_index_from_request('count', check_bounds=False)
+            added_order_index = self.getIndex('count', check_bounds=False)
             if added_order_index is None:
                 added_order_index = 0
         added_order_index = int(added_order_index)
@@ -1057,7 +1541,7 @@ class MetaDataHandler(RequestHandlerParent):
             info['picture_index_date_order'] = picture_index.dateOrderIndex
             info['picture_index_date_order_string'] = picture_index.dateOrderString
 
-        self.write_output("%s\n" % json.dumps(info))
+        self.writeOutput("%s\n" % json.dumps(info))
 
 class WriteBucket(RequestHandlerParent):
     """Test to demonstract cloudstorage writes."""
@@ -1080,7 +1564,7 @@ class ListBucket(RequestHandlerParent):
             logging.info("gcs_iterator item %s" % item)
             items.append(item)
 
-        self.write_output("Done %s %s\n" % (gcs_iterator, pformat(items)))
+        self.writeOutput("Done %s %s\n" % (gcs_iterator, pformat(items)))
 
 class EmailHandler(InboundMailHandler):
     def post(self):
