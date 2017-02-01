@@ -42,6 +42,10 @@ handlers:
   static_files: static/resume.html
   upload: static/resume.html
 
+- url: /resist
+  static_files: static/resist.html
+  upload: static/resist.html
+
 - url: /flashcards
   script: flashcards.py
 
@@ -54,9 +58,6 @@ handlers:
 
 inbound_services:
 - mail
-
-includes:
-- mapreduce/include.yaml
 
 builtins:
 - remote_api: on
