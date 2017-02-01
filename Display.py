@@ -748,7 +748,7 @@ class NavigatePicturesNew(NavigatePictures):
     def post(self):
         self.redirect('/nav/%d' % self.get_current_index())
 
-    def get(self, index=None):
+    def get(self, index=None, ignore=None):
 
         try:
             # Bail out if there are no pics:
@@ -799,9 +799,9 @@ class NavigatePicturesNew(NavigatePictures):
                     slide = pis[0]
                 except IndexError as err:
                     old_slide_index = slide_index
-                    slide_index = random.randint(0, highest_picture_index())
+                    slide_index -= 1
                     logging.debug(
-                        "dateOrderIndex %s failed, retrying with random index %s"  % 
+                        "dateOrderIndex %s failed, retrying with new index %s"  % 
                         (old_slide_index, slide_index))
 
             template_values = {
@@ -1343,6 +1343,9 @@ def real_main():
                      ('/navperm/(.*)/',       NavigatePicturesNew),
                      ('/navperm/(.*)',        NavigatePicturesNew),
                      ('/(\d+)',               NavigatePicturesNew),
+                     ('/newpicture',               NavigatePicturesNew),
+                     ('/navigate',                 NavigatePicturesNew),
+                     ('/n',                        NavigatePicturesNew),
                      ('/navdate/(.*)',        NavigateByDateHandler),
                      ('/imgdate/(.*)',        ImageByDateHandler),
                      ('/img',                 ImageByIndexHandler),
@@ -1385,13 +1388,10 @@ def real_main():
                      ('/clearfavorites',           ClearFavorites),
                      #('/tagdatechanges',           TagDateChanges),
                      ('/favoritespage',            MakeFavoritesPage),
-                     ('/newpicture',               NavigatePicturesNew),
                      ('/showuploadpage',           ShowUploadPage),
                      ('/blobupload',               BlobUploadNewPicture),
                      ('/blobview.*',               BlobViewPicture),
                      ('/uploadpicture',            UploadNewPicture),
-                     ('/navigate',                 NavigatePicturesNew),
-                     ('/n',                        NavigatePicturesNew),
                      ('/\d+\.jpg',                 ImageByJpgIndexHandler),
                      ('/jpg.*',                    ImageByJpgIndexHandler),
                      ('/imgbyindex',               ImageByIndexHandler),
