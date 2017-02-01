@@ -1,4 +1,4 @@
-<div class="navbar navbar-default" role="navigation">
+<div class="navbar {% if admin_flag %}navbar-inverse{% else %}navbar-default{% endif %}" role="navigation">
   <div class="container-fluid">
 
     <div class="navbar-header">
@@ -15,13 +15,13 @@
       <ul class="nav navbar-nav navbar-right">
         <li>
             <a title="Permalink for this page" href="/navperm/{{count_index}}">
-              <span class="hidden-lg">Permalink</span>
+              <span class="hidden-md hidden-lg">Permalink</span>
               <span class="glyphicon glyphicon-link"></span>
             </a>
           </li> 
         <li>
           <a title="Permalink for this image" href="/imgperm/{{count_index}}">
-            <span class="hidden-lg">Image Permalink</span>
+            <span class="hidden-md hidden-lg">Image Permalink</span>
             <span class="glyphicon glyphicon-link"></span>
             <span class="glyphicon glyphicon-picture"></span>
           </a>
@@ -29,7 +29,7 @@
 
         <li>
           <a title="Oldest picture" href="/nav/0">
-            <span class="hidden-lg">Oldest</span>
+            <span class="hidden-md hidden-lg">Oldest</span>
             <span class="glyphicon glyphicon-backward"></span>
           </a>
         </li>
@@ -41,7 +41,7 @@
         </li>
         <li>
           <a title="Random picture" href="/nav/{{random_index}}">
-            <span class="hidden-lg">Random </span>?
+            <span class="hidden-md hidden-lg">Random </span>?
           </a>
         </li>
         <li>
@@ -52,41 +52,41 @@
         </li>
         <li>
           <a title="Newest picture" href="/nav/{{newest_index}}">
-            <span class="hidden-lg">Newest</span>
+            <span class="hidden-md hidden-lg">Newest</span>
             <span class="glyphicon glyphicon-forward">
           </a>
         </li>
 
         <li>
           <a title="Time jump 2.5 years earlier" href="/timejump/{{current_index}}/-2.5">
-            <span class="hidden-lg">-2.5yr</span>
+            <span class="hidden-md hidden-lg">-2.5yr</span>
             <span class="glyphicon glyphicon-backward"></span>
             <span class="glyphicon glyphicon-time"></span>
           </a>
         </li>
         <li>
           <a title="Time jump one year earlier" href="/timejump/{{current_index}}/-1.0">
-            <span class="hidden-lg">-1.0yr</span>
+            <span class="hidden-md hidden-lg">-1.0yr</span>
             <span class="glyphicon glyphicon-chevron-left"></span>
             <span class="glyphicon glyphicon-time"></span>
           </a>
         </li>
         <li>
           <a title="Miri, Julia, and Linus at the same age" href="/same_age">
-            <span class="hidden-lg">Same Age</span>
+            <span class="hidden-md hidden-lg">Same Age</span>
             <span class="glyphicon glyphicon-time"></span> =
           </a>
         </li>
         <li>
           <a title="Time jump one year later" href="/timejump/{{current_index}}/1.0">
-            <span class="hidden-lg">1.0yr</span>
+            <span class="hidden-md hidden-lg">1.0yr</span>
             <span  class="glyphicon glyphicon-time"></span>
             <span class="glyphicon glyphicon-chevron-right"></span>
           </a>
         <li>
         <li>
           <a title="Time jump 2.5 years later" href="/timejump/{{current_index}}/2.5">
-            <span class="hidden-lg">2.5yr</span>
+            <span class="hidden-md hidden-lg">2.5yr</span>
             <span  class="glyphicon glyphicon-time"></span>
             <span class="glyphicon glyphicon-forward"></span>
           </a>
@@ -94,13 +94,13 @@
 
         <li>
           <a title="Ten random pictures" href="/carousel">
-            <span class="hidden-lg">10 Random</span>
+            <span class="hidden-md hidden-lg">10 Random</span>
             <span class="glyphicon glyphicon-film"></span>?
           </a>
         </li>
         <li>
           <a title="The ten previous pictures" href="/carousel/{{count_index}}">
-            <span class="hidden-lg">10 Previous</span>
+            <span class="hidden-md hidden-lg">10 Previous</span>
             <span class="glyphicon glyphicon-film"></span>
           </a>
         </li>
