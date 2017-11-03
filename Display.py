@@ -172,6 +172,27 @@ def get_date_order_string(count, rawDate=None):
                  (dateOrderString, count, rawDate))
     return dateOrderString
 
+def email_upload_summary(picture_indices, subject=''):
+    template = """
+<li>
+  Image %s<br/>
+  <a href="http://surlyfritter.appspot.com/perm/%d">
+    <img src="http://surlyfritter.appspot.com/imgperm/%d"/>
+  </a>
+  <br/>
+</li>"""
+    msg = """
+New pictures uploaded:\n
+<ul>
+"""
+    for pi in picture_indices:
+        msg = msg + (template % (pi.pix_ref.name, pi.count, pi.count))
+    msg += """
+</ul>
+"""
+    outsub = "email upload pictures: %s" % subject
+    notification_email_html(subject=outsub, body=msg, to=NOTIFICATION_RECEIVER)
+
 # Operations classes:
 #
 class SideBySideHandler(RequestHandlerParent):
@@ -479,6 +500,7 @@ class BlobUploadNewPicture(blobstore_handlers.BlobstoreUploadHandler):
         logging.info('done get_uploads')
         logging.info('upload_files: %s' % upload_files)
 
+        pis = []
         images_size_sum = 0
         for upload_file in upload_files:
 
@@ -497,7 +519,10 @@ class BlobUploadNewPicture(blobstore_handlers.BlobstoreUploadHandler):
             blob_key = upload_file.key()
             filename = upload_file.filename
 
-            add_picture(blob_key, filename, isBlobstore=True)
+            pi = add_picture(blob_key, filename, isBlobstore=True)
+            pis.append(pi)
+
+        email_upload_summary(pis, subject='')
 
         self.redirect('/flush')
 
@@ -638,7 +663,7 @@ class NavigatePictures(RequestHandlerParent):
         # Permalinks are of the form /navperm/\d+ (explict) or /\d+ (implicit):
         #
         req_path = self.request.path
-        is_permalink_exp = req_path.startswith('/navperm')
+        is_permalink_exp = req_path.startswith('/navperm') or req_path.startswith('/perm')
         is_permalink_imp = re.match(r'/\d+', req_path) is not None
         is_permalink = is_permalink_exp or is_permalink_imp
         if is_permalink:
@@ -804,8 +829,14 @@ class NavigatePicturesNew(NavigatePictures):
                         "dateOrderIndex %s failed, retrying with new index %s"  % 
                         (old_slide_index, slide_index))
 
+            comments_text = " ".join(
+                [c.content for c in PictureComment.getComments(slide.count)])
+            tags_text = " ".join(
+                [t.name_ref.name for t in Tag.all().filter('count = ', slide.count)])
             template_values = {
                 'slide': slide,
+                'picture_comments': comments_text,
+                'picture_tags': tags_text,
 
                 'count_index':      slide.count,
                 'prev_index':       prev_index,
@@ -955,8 +986,8 @@ class OrphanHandler(RequestHandlerParent):
         self.orphan_blobs = []
         blobs = blobstore.BlobInfo.all().run()
         for blob in blobs:
-            ref_count = Picture.all(
-                        ).filter("blobStorePictureKey =", blob.key()).count(1)
+            ref_count = Picture.all().filter(
+                            "blobStorePictureKey =", blob.key()).count(1)
             if not ref_count:
                 self.orphan_blobs.append(blob)
                 logging.info("OphanHandler: %s Ophan blob %s" % (ref_count, blob))
@@ -1300,24 +1331,12 @@ class EmailHandler(InboundMailHandler):
                 logging.info('email doesnt have subject')
 
         if len(successful_picture_indices) > 0:
-            self.email_upload_summary(successful_picture_indices, subj)
+            email_upload_summary(successful_picture_indices, subj)
 
-    def email_upload_summary(self, picture_indices, subject=''):
-        template = (' * Image %s<br>'
-                    '<a  href="http://surlyfritter.appspot.com/navperm/%d">'
-                    '<img src="http://surlyfritter.appspot.com/imgperm/%d"/>'
-                    '</a><br>')
-        msg = "Pictures uploaded via email:\n"
-        for picture_index in picture_indices:
-            msg = msg + (template % (
-                             picture_index.pix_ref.name,
-                             picture_index.count,
-                             picture_index.count,))
-
-        full_sub = "email upload pictures: %s" % subject
-        notification_email_html(subject=full_sub,
-                                body=msg,
-                                to=NOTIFICATION_RECEIVER)
+#class TilesHandler(webapp.RequestHandler):
+    #def get(self, z, x, y):
+        #tile = '<img src="/static/tiles/%s/%s/%s.jpg"/>' % (z, x, y)
+        #self.response.out.write(tile)
 
 class NotFoundPageHandler(webapp.RequestHandler):
     def get(self):
@@ -1337,6 +1356,11 @@ def real_main():
                      ('/nav/(.*)/(.*)',       NavigatePicturesNew),
                      ('/nav/(.*)/',           NavigatePicturesNew),
                      ('/nav/(.*)',            NavigatePicturesNew),
+                     ('/perm',                NavigatePicturesNew),
+                     ('/perm/',               NavigatePicturesNew),
+                     ('/perm/(.*)/(.*)',      NavigatePicturesNew),
+                     ('/perm/(.*)/',          NavigatePicturesNew),
+                     ('/perm/(.*)',           NavigatePicturesNew),
                      ('/navperm',             NavigatePicturesNew),
                      ('/navperm/',            NavigatePicturesNew),
                      ('/navperm/(.*)/(.*)',   NavigatePicturesNew),
@@ -1427,6 +1451,8 @@ def real_main():
                      ('/meta',                     MetaDataHandler),
                      ('/meta/(.*)',                MetaDataHandler),
                      ('/replaceimage',             ReplaceImageHandler),
+
+                     #('/tiles/(\d+)/(\d+)/(\d+).jpg', TilesHandler), # webgl experiment
 
                      ('/.*',                       NotFoundPageHandler),
                     ],

@@ -194,7 +194,12 @@ class Picture(db.Model):
         if image is None:
             logging.debug("No Picture.getImage in memcache for %s" % memcacheName)
             image = self.getRotatedImage()
-            memcacheStatus = memcache.set(memcacheName, image)
+            try:
+                memcacheStatus = memcache.set(memcacheName, image)
+            except ValueError as err:
+                logging.debug("ValueError caught in memcache attempt %s" % err)
+                memcacheStatus = None
+                
             if not memcacheStatus:
                 logging.debug("Picture.getImage memcache set failed for %s" % 
                               memcacheName)
