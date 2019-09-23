@@ -1,0 +1,129 @@
+
+body {
+  background-color: lightgray;
+  font-family: "Barlow", sans-serif;
+  padding: 25px 25px 25px 25px;
+}
+div {
+  border-style: none;
+}
+a {
+  text-decoration: none;
+}
+li {
+  margin-left: -1.5em;
+  margin-top: 0.35em;
+}
+
+.leftcol {
+  /*border-style: dotted;*/
+  width: 65%;
+  float: left;
+}
+.rightcol {
+  /*border-style: dashed;*/
+  margin-left: 68%; /* width of leftcol + smidge */
+}
+.clear {
+  clear: both;
+}
+
+
+.contact {
+  color: blue;
+}
+.contact .name {
+  color: red;
+  font-size: 3.5em;
+  display: inline-block;
+}
+.contact .description {
+  color: yellow;
+  display: inline-block;
+  margin-left: 5em;
+}
+.contact .description .details li {
+  color: green;
+  display: inline;
+  margin-left: 1.5em;
+}
+
+
+.technical .headline {
+  font-size: 1.5em;
+}
+.technical ul {
+  margin-top: -0.5em;
+  list-style-type: none;
+}
+
+
+.experience .headline {
+  font-size: 1.5em;
+}
+.experience .company { /* TODO: need link styling here */
+  color: green;
+  margin-left: 0.5em;
+  display: inline-block;
+}
+.experience .location {
+  margin-left: 2em;
+  font-size: 0.75em;
+  display: inline-block;
+}
+.experience .title {
+  color: rebeccapurple;
+  margin-left: 1em;
+  display: inline-block;
+}
+.experience .date {
+  color: blue;
+  display: inline-block;
+  float: right;
+  margin-right: 0.5em;
+}
+.experience ul {
+  margin-left: 1.0em;
+  margin-top: -1.0em;
+  list-style-type: none;
+  color: red;
+}
+.experience a {
+  color: darkgray;
+}
+
+
+.projects .headline {
+  font-size: 1.5em;
+}
+.projects ul {
+  margin-top: -0.5em;
+  margin-left: 0.5em;
+  list-style-type: none;
+  color: red;
+}
+
+
+.education .headline {
+  font-size: 1.5em;
+}
+.education .institution {
+  color: red;
+  margin-left: 0.5em;
+}
+.education .course{
+  color: green;
+  margin-left: 1.5em;
+}
+
+
+.publications .headline {
+  font-size: 1.5em;
+}
+.publications ul {
+  margin-top: -0.5em;
+  margin-left: 0.5em;
+  list-style-type: none;
+  color: green;
+}
+
