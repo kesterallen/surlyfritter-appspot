@@ -1,63 +1,175 @@
-body {
-    margin-left: 7%;
-    padding-left: 5%;
-    width: 80%;
-    background-color: #fffffa;
-    /*max-width: 40em;*/
-    color: #333;
-    font-family: Arial, Verdana, Lucida, Helvetica, sans-serif;
+* {box-sizing: border-box;}
+
+a {
+  text-decoration: none;
+  color: #0083F8;
+}
+a:hover {
+  text-decoration: underline;
+}
+a:active {
+  color: black;
 }
 
-h1, h2, h3, h4, h5, h6 {
-    text-indent: -0.75em;
-    margin: 1.5em 0 0 0;
-    padding: 0;
-    color: #448;
+.wrapper {
+  max-width: 1024px;
+  margin: 0 auto;
+  font: 1.1em 'Barlow', sans-serif;
+  line-height: 1.2;
+}
+.wrapper > * {
+  background-color: #d6dbff;
+  padding: 10px;
 }
 
-h1 {
-    font-variant: small-caps;
-    letter-spacing: 0.05em;
-    margin-bottom:  0.3em;
+.main-head {
+  border: none;
+  grid-area: header;
+  background-color: white;
+}
+.main-head h1 {
+  text-align: center;
+  font-size: 3em;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+.main-head ul {
+  text-align: center;
+  margin: 1px 1px 1px 1px;
+  padding-inline-start: 0px;
+}
+.main-head li {
+  display: inline;
+  margin-left: 25px;
+  font-size: 0.85em;
+  white-space: nowrap;
 }
 
-h4, h5 { 
-    margin-top:    -0.3em; 
-    margin-bottom:  0.2em; 
-    margin-left:    0.5em; 
-    color: #333;
+.main-column-first{
+  grid-area: content;
+  background-color: #efefef;
+}
+.main-column-first li {
+  list-style-type: none;
+  margin-bottom: 0.75em;
+}
+.jobdate {
+  float: right;
 }
 
-h6 { 
-    margin-top: -1.25em;
+.main-column-second {
+  grid-area: sidebar;
+  border: none;
+}
+.main-column-second ul {
+  margin-top: -20px;
+  margin-left: -30px;
+}
+.main-column-second li {
+  list-style-type: none;
+	margin-top: 10px;
 }
 
-ul {
-    margin-top:  -0.5em;
-    margin-bottom:  1.5em;
+.main-footer {
+  text-align: center;
+  grid-area: footer;
+  background-color: white;
+  display: inline;
+}
+.main-footer span {
+  font-size: 1.5em;
+}
+.main-footer ul {
+  display:inline;
+  margin-top: 1px;
+  margin-bottom: 1px;
+}
+.main-footer li {
+  display:inline;
+  margin-left: 25px;
+  font-size: 0.85em;
 }
 
-ul.technicalExperience {
-    margin-left:  -2.0em;
+.entry:hover {
+	background-color: lightgray;
+}
+.entry h4 {
+  margin-top: 25px;
+  margin-left: 10px;
+  margin-bottom: 0px;
+}
+.entry h5 {
+  margin-left: 20px;
+  margin-top: 5px;
+  margin-bottom: 0px;
+}
+.entry ul {
+  margin-top: 10px;
+  margin-left: 10px;
+}
+.entry p {
+  margin-top: 5px;
+  margin-left: 20px;
 }
 
-ul.publications {
-    margin-top:   0.0em;
+.wrapper {
+  display: grid;
+  grid-gap: 2px;
+  grid-template-areas:
+    "header"
+    "content"
+    "sidebar"
+    "footer";
+}
+@media (min-width: 600px) {
+  .wrapper {
+    grid-template-columns: 5fr 2fr;
+    grid-gap: 10px;
+    grid-template-areas:
+      "header header"
+      "content sidebar"
+      "footer  footer"
+   }
 }
 
-li {
-    line-height: 1.2em;
-} 
-
-p {
-    margin-top: -0.15em; 
-    margin-left: 0;
-    padding-left: 0;
-    color: #777;
-    font-size: 0.8em;
-    line-height: 1em;
-} 
-
-dt {
-    font-weight: bold;
+/* 
+  Just the 6 SVG glyphs from fontawesome (via fontello) for:
+    map
+    phone
+    email
+    twitter
+    github
+    linkedin
+  for header and footer links
+*/
+@font-face {
+  font-family: 'fontello';
+  src: url('/font/fontello.eot?53539485');
+  src: url('/font/fontello.eot?53539485#iefix') format('embedded-opentype'),
+       url('/font/fontello.woff?53539485') format('woff'),
+       url('/font/fontello.ttf?53539485') format('truetype'),
+       url('/font/fontello.svg?53539485#fontello') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+     
+.icon {
+  font-family: "fontello";
+  font-style: normal;
+  font-weight: normal;
+  speak: none;
+ 
+  display: inline-block;
+  text-decoration: inherit;
+  width: 1em;
+  margin-right: .2em;
+  text-align: center;
+ 
+  /* For safety - reset parent styles, that can break glyph codes*/
+  font-variant: normal;
+  text-transform: none;
+ 
+  /* Font smoothing. That was taken from TWBS */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
