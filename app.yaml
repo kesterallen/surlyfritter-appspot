@@ -14,6 +14,14 @@ handlers:
 - url: /images
   static_dir: static/images
 
+- url: /font
+  static_dir: static/font
+
+- url: /tiles
+  static_dir: static/tiles
+  http_headers:
+    Access-Control-Allow-Origin: "*"
+
 - url: /apple-touch-icon.png
   static_files: static/images/july4th.png
   upload: static/images/july4th.png
@@ -38,9 +46,21 @@ handlers:
   static_files: static/movie.html
   upload: static/movie.html
 
+- url: /globe.*
+  static_files: static/webglearth.html
+  upload: static/webglearth.html
+
 - url: /resume
   static_files: static/resume.html
   upload: static/resume.html
+
+- url: /recipe
+  static_files: static/pancake_recipe.html
+  upload: static/pancake_recipe.html
+
+- url: /pancakes
+  static_files: static/pancake_recipe.html
+  upload: static/pancake_recipe.html
 
 - url: /resist
   static_files: static/resist.html
@@ -49,8 +69,8 @@ handlers:
 - url: /flashcards
   script: flashcards.py
 
-- url: /_ah/mail/.+ 
-  script: Display.py 
+- url: /_ah/mail/.+
+  script: Display.py
   login: admin
 
 - url: /.*

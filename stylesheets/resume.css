@@ -165,7 +165,7 @@ a:active {
   margin-right: .2em;
   text-align: center;
  
-  /* For safety - reset parent styles, that can break glyph codes*/
+  /* For safety - reset parent styles, that can break glyph codes */
   font-variant: normal;
   text-transform: none;
  

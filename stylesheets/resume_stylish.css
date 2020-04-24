@@ -1,4 +1,13 @@
 
+.container {
+  margin-left: 10%;
+  margin-right: 10%;
+}
+
+h3 {
+  font-size: 1.5em;
+}
+
 body {
   background-color: lightgray;
   font-family: "Barlow", sans-serif;
@@ -10,23 +19,37 @@ div {
 a {
   text-decoration: none;
 }
+ul {
+  margin-top: -0.5em;
+  margin-left: 0.5em;
+  list-style-type: none;
+}
 li {
   margin-left: -1.5em;
   margin-top: 0.35em;
+  margin-top: 0.75em;
+}
+
+.entry:hover {
+  background-color: pink;
 }
 
 .leftcol {
-  /*border-style: dotted;*/
+  border-style: dotted;
   width: 65%;
   float: left;
 }
 .rightcol {
-  /*border-style: dashed;*/
+  border-style: dashed;
   margin-left: 68%; /* width of leftcol + smidge */
 }
 .clear {
   clear: both;
 }
+
+
+
+
 
 
 .contact {
@@ -49,18 +72,11 @@ li {
 }
 
 
-.technical .headline {
-  font-size: 1.5em;
-}
 .technical ul {
-  margin-top: -0.5em;
-  list-style-type: none;
+  color: brown;
 }
 
 
-.experience .headline {
-  font-size: 1.5em;
-}
 .experience .company { /* TODO: need link styling here */
   color: green;
   margin-left: 0.5em;
@@ -72,8 +88,8 @@ li {
   display: inline-block;
 }
 .experience .title {
-  color: rebeccapurple;
   margin-left: 1em;
+  color: rebeccapurple;
   display: inline-block;
 }
 .experience .date {
@@ -93,20 +109,11 @@ li {
 }
 
 
-.projects .headline {
-  font-size: 1.5em;
-}
 .projects ul {
-  margin-top: -0.5em;
-  margin-left: 0.5em;
-  list-style-type: none;
   color: red;
 }
 
 
-.education .headline {
-  font-size: 1.5em;
-}
 .education .institution {
   color: red;
   margin-left: 0.5em;
@@ -117,13 +124,7 @@ li {
 }
 
 
-.publications .headline {
-  font-size: 1.5em;
-}
 .publications ul {
-  margin-top: -0.5em;
-  margin-left: 0.5em;
-  list-style-type: none;
-  color: green;
+  :olor: green;
 }
 

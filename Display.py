@@ -462,9 +462,11 @@ class FeedHandler(RequestHandlerParent):
 class ShowUploadPage(RequestHandlerParent):
     def get(self):
         user = users.get_current_user()
-        if user and users.is_current_user_admin():
+        if True: #TODO: removing user requirement to upload in bulk, revert this 2019-07-29 #if user and users.is_current_user_admin():
             blob_upload_url = blobstore.create_upload_url("/blobupload")
-            welcome_text = 'Hello ' + user.nickname()
+            welcome_text = 'Hello '
+            if user:
+                welcome_text += user.nickname()
 
             template_values = {
                 'blob_upload_url': blob_upload_url,
@@ -522,7 +524,7 @@ class BlobUploadNewPicture(blobstore_handlers.BlobstoreUploadHandler):
             pi = add_picture(blob_key, filename, isBlobstore=True)
             pis.append(pi)
 
-        email_upload_summary(pis, subject='')
+        #email_upload_summary(pis, subject='')
 
         self.redirect('/flush')
 
@@ -1343,6 +1345,11 @@ class NotFoundPageHandler(webapp.RequestHandler):
         self.error(404)
         self.response.out.write('Page Not Found! <a href="/">Front page</a>')
 
+class ReactHandler(webapp.RequestHandler):
+    def get(self):
+        text = render_template_text('react.html', [])
+        self.response.out.write(str(text))
+
 def real_main():
     application = webapp.WSGIApplication(
                     [
@@ -1451,6 +1458,8 @@ def real_main():
                      ('/meta',                     MetaDataHandler),
                      ('/meta/(.*)',                MetaDataHandler),
                      ('/replaceimage',             ReplaceImageHandler),
+
+                     ('/react', ReactHandler),
 
                      #('/tiles/(\d+)/(\d+)/(\d+).jpg', TilesHandler), # webgl experiment
 
