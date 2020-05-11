@@ -1,5 +1,3 @@
-application: surlyfritter-hrd
-version: 4
 runtime: python27
 api_version: 1
 threadsafe: false
@@ -10,12 +8,15 @@ handlers:
 
 - url: /static
   static_dir: static
+  application_readable: true
 
 - url: /images
   static_dir: static/images
+  application_readable: true
 
 - url: /font
   static_dir: static/font
+  application_readable: true
 
 - url: /tiles
   static_dir: static/tiles
@@ -50,21 +51,14 @@ handlers:
   static_files: static/webglearth.html
   upload: static/webglearth.html
 
-- url: /resume
-  static_files: static/resume.html
-  upload: static/resume.html
-
-- url: /recipe
-  static_files: static/pancake_recipe.html
-  upload: static/pancake_recipe.html
-
-- url: /pancakes
-  static_files: static/pancake_recipe.html
-  upload: static/pancake_recipe.html
-
 - url: /resist
   static_files: static/resist.html
   upload: static/resist.html
+
+- url: /resume
+  static_files: static/resume.html
+  upload: static/resume.html
+  application_readable: true
 
 - url: /flashcards
   script: flashcards.py

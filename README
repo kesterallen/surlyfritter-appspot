@@ -1,0 +1,4 @@
+
+gcloud config set project surlyfritter-hrd
+gcloud app deploy
+

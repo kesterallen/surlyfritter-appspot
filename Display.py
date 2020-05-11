@@ -828,7 +828,7 @@ class NavigatePicturesNew(NavigatePictures):
                     old_slide_index = slide_index
                     slide_index -= 1
                     logging.debug(
-                        "dateOrderIndex %s failed, retrying with new index %s"  % 
+                        "dateOrderIndex %s failed, retrying with new index %s"  %
                         (old_slide_index, slide_index))
 
             comments_text = " ".join(
@@ -1177,6 +1177,62 @@ class MetaDataHandler(RequestHandlerParent):
 
         self.write_output("%s\n" % json.dumps(info))
 
+class RecipesHandler(RequestHandlerParent):
+    """Serve a recipe, or the index of recipies"""
+
+    PANCAKES = [
+        'pancakes',
+        'buttermilk',
+        'flapjacks',
+        'hotcakes',
+        'griddlecakes',
+    ]
+    SOURDOUGH_PANCAKES = [
+        'sourdough',
+        'sourdough_pancakes',
+    ]
+    WAFFLES = [
+        'waffles',
+        'yogurt_wafffles',
+    ]
+
+    def make_recipe_values(self, recipe_name):
+        if recipe_name in RecipesHandler.PANCAKES:
+            values = dict(
+                url="buttermilk_pancakes.html",
+                title="All-buttermilk pancakes",
+                subtitle="Best pancake recipe",
+            )
+        elif recipe_name in RecipesHandler.SOURDOUGH_PANCAKES:
+            values = dict(
+                url="sourdough_pancakes.html",
+                title="Sourdough-buttermilk pancakes",
+                subtitle="Good pancake recipe",
+            )
+        elif recipe_name in RecipesHandler.WAFFLES:
+            values = dict(
+                url="yogurt_waffles.html",
+                title="Yogurt waffles",
+                subtitle="Good waffles recipe",
+            )
+        else:
+            values = dict(
+                url="recipes.html",
+                title="Recipes List",
+                subtitle="Recipes List",
+            )
+        return values
+
+    def get(self, recipe_name=None):
+        values = self.make_recipe_values(recipe_name)
+        full_url = "static/recipes/{}".format(values['url'])
+        page = render_template_text(full_url, values)
+        self.write_output(page)
+
+class PancakesHandler(RecipesHandler):
+    def get(self):
+        super(PancakesHandler, self).get(recipe_name="pancakes")
+
 class WriteBucket(RequestHandlerParent):
     """Test to demonstrate cloudstorage writes."""
     def get(self):
@@ -1352,120 +1408,125 @@ class ReactHandler(webapp.RequestHandler):
 
 def real_main():
     application = webapp.WSGIApplication(
-                    [
-                     ('/listbucket',          ListBucket),
-                     ('/writebucketfile',     WriteBucket),
-                     ('/imgsrv/(.*)',         ImageServingUrl),
-                     ('/navold/(.+)',         NavigatePictures),
-                     ('/navold/(.+)/(.+)',    NavigatePictures),
-                     ('/nav',                 NavigatePicturesNew),
-                     ('/nav/',                NavigatePicturesNew),
-                     ('/nav/(.*)/(.*)',       NavigatePicturesNew),
-                     ('/nav/(.*)/',           NavigatePicturesNew),
-                     ('/nav/(.*)',            NavigatePicturesNew),
-                     ('/perm',                NavigatePicturesNew),
-                     ('/perm/',               NavigatePicturesNew),
-                     ('/perm/(.*)/(.*)',      NavigatePicturesNew),
-                     ('/perm/(.*)/',          NavigatePicturesNew),
-                     ('/perm/(.*)',           NavigatePicturesNew),
-                     ('/navperm',             NavigatePicturesNew),
-                     ('/navperm/',            NavigatePicturesNew),
-                     ('/navperm/(.*)/(.*)',   NavigatePicturesNew),
-                     ('/navperm/(.*)/',       NavigatePicturesNew),
-                     ('/navperm/(.*)',        NavigatePicturesNew),
-                     ('/(\d+)',               NavigatePicturesNew),
-                     ('/newpicture',               NavigatePicturesNew),
-                     ('/navigate',                 NavigatePicturesNew),
-                     ('/n',                        NavigatePicturesNew),
-                     ('/navdate/(.*)',        NavigateByDateHandler),
-                     ('/imgdate/(.*)',        ImageByDateHandler),
-                     ('/img',                 ImageByIndexHandler),
-                     ('/img/',                ImageByIndexHandler),
-                     ('/img/(.*)',            ImageByIndexHandler),
-                     ('/imgperm',             ImageByOrderAddedHandler),
-                     ('/imgperm/',            ImageByOrderAddedHandler),
-                     ('/imgperm/(.*)',        ImageByOrderAddedHandler),
-                     ('/imgname/(.*)',        ImageByNameHandler),
-                     ('/tag/(.*)',            ImagesByTagHandler),
-                     ('/timejump/(.*)/(.*)',  TimeJumpHandler), # current_index, days
-                     ('/miri_is',             MiriTimeJumpHandler),
-                     ('/miri_is/',            MiriTimeJumpHandler),
-                     ('/miri_is/(.*)',        MiriTimeJumpHandler),
-                     ('/julia_is',            JuliaTimeJumpHandler),
-                     ('/julia_is/',           JuliaTimeJumpHandler),
-                     ('/julia_is/(.*)',       JuliaTimeJumpHandler),
-                     ('/linus_is',            LinusTimeJumpHandler),
-                     ('/linus_is/',           LinusTimeJumpHandler),
-                     ('/linus_is/(.*)',       LinusTimeJumpHandler),
-                     ('/same_age',            SameAgeJumpHandler),
-                     ('/same_age',            SameAgeJumpHandler),
-                     ('/same_age/',           SameAgeJumpHandler),
-                     ('/same_age/(.*)',       SameAgeJumpHandler),
-                     ('/side_by_side(.*)',    SideBySideHandler),
-                     #('/side_by_side/(.*)/(.*)', SideBySideHandler),
-                     #('/filmstrip/(.*)',      FilmstripHandler),
-                     #('/filmstrip',           FilmstripHandler),
-                     ('/carousel/(.*)/(.*)',  CarouselHandler),
-                     ('/carousel/(.*)',       CarouselHandler),
-                     ('/carousel/',           CarouselHandler),
-                     ('/carousel',            CarouselHandler),
+        [
+            ('/listbucket',          ListBucket),
+            ('/writebucketfile',     WriteBucket),
+            ('/imgsrv/(.*)',         ImageServingUrl),
+            ('/navold/(.+)',         NavigatePictures),
+            ('/navold/(.+)/(.+)',    NavigatePictures),
+            ('/nav',                 NavigatePicturesNew),
+            ('/nav/',                NavigatePicturesNew),
+            ('/nav/(.*)/(.*)',       NavigatePicturesNew),
+            ('/nav/(.*)/',           NavigatePicturesNew),
+            ('/nav/(.*)',            NavigatePicturesNew),
+            ('/perm',                NavigatePicturesNew),
+            ('/perm/',               NavigatePicturesNew),
+            ('/perm/(.*)/(.*)',      NavigatePicturesNew),
+            ('/perm/(.*)/',          NavigatePicturesNew),
+            ('/perm/(.*)',           NavigatePicturesNew),
+            ('/navperm',             NavigatePicturesNew),
+            ('/navperm/',            NavigatePicturesNew),
+            ('/navperm/(.*)/(.*)',   NavigatePicturesNew),
+            ('/navperm/(.*)/',       NavigatePicturesNew),
+            ('/navperm/(.*)',        NavigatePicturesNew),
+            ('/(\d+)',               NavigatePicturesNew),
+            ('/newpicture',          NavigatePicturesNew),
+            ('/navigate',            NavigatePicturesNew),
+            ('/n',                   NavigatePicturesNew),
+            ('/navdate/(.*)',        NavigateByDateHandler),
+            ('/imgdate/(.*)',        ImageByDateHandler),
+            ('/img',                 ImageByIndexHandler),
+            ('/img/',                ImageByIndexHandler),
+            ('/img/(.*)',            ImageByIndexHandler),
+            ('/imgperm',             ImageByOrderAddedHandler),
+            ('/imgperm/',            ImageByOrderAddedHandler),
+            ('/imgperm/(.*)',        ImageByOrderAddedHandler),
+            ('/imgname/(.*)',        ImageByNameHandler),
+            ('/tag/(.*)',            ImagesByTagHandler),
+            ('/timejump/(.*)/(.*)',  TimeJumpHandler), # current_index, days
+            ('/miri_is',             MiriTimeJumpHandler),
+            ('/miri_is/',            MiriTimeJumpHandler),
+            ('/miri_is/(.*)',        MiriTimeJumpHandler),
+            ('/julia_is',            JuliaTimeJumpHandler),
+            ('/julia_is/',           JuliaTimeJumpHandler),
+            ('/julia_is/(.*)',       JuliaTimeJumpHandler),
+            ('/linus_is',            LinusTimeJumpHandler),
+            ('/linus_is/',           LinusTimeJumpHandler),
+            ('/linus_is/(.*)',       LinusTimeJumpHandler),
+            ('/same_age',            SameAgeJumpHandler),
+            ('/same_age',            SameAgeJumpHandler),
+            ('/same_age/',           SameAgeJumpHandler),
+            ('/same_age/(.*)',       SameAgeJumpHandler),
+            ('/side_by_side(.*)',    SideBySideHandler),
+            #('/side_by_side/(.*)/(.*)', SideBySideHandler),
+            #('/filmstrip/(.*)',      FilmstripHandler),
+            #('/filmstrip',           FilmstripHandler),
+            ('/carousel/(.*)/(.*)',  CarouselHandler),
+            ('/carousel/(.*)',       CarouselHandler),
+            ('/carousel/',           CarouselHandler),
+            ('/carousel',            CarouselHandler),
 
-                     ('/',                         NavigatePicturesNew),
-                     ('/slideshow',                StartSlideShow),
-                     ('/addtag',                   AddTag),
-                     ('/addcomment',               AddComment),
-                     ('/addgreeting',              AddGreeting),
-                     ('/markfavorite',             MarkAsFavorite),
-                     ('/clearfavorites',           ClearFavorites),
-                     #('/tagdatechanges',           TagDateChanges),
-                     ('/favoritespage',            MakeFavoritesPage),
-                     ('/showuploadpage',           ShowUploadPage),
-                     ('/blobupload',               BlobUploadNewPicture),
-                     ('/blobview.*',               BlobViewPicture),
-                     ('/uploadpicture',            UploadNewPicture),
-                     ('/\d+\.jpg',                 ImageByJpgIndexHandler),
-                     ('/jpg.*',                    ImageByJpgIndexHandler),
-                     ('/imgbyindex',               ImageByIndexHandler),
-                     ('/exivbyindex',              ExivByIndexHandler),
-                     ('/datebyindex',              DateByIndexHandler),
-                     ('/tagsbyindex',              TagsByIndexHandler),
-                     ('/tagsbyname',               TagsByNameHandler),
-                     ('/imagesbytag',              ImagesByTagHandler),
-                     ('/tagcloud',                 TagCloudHandler),
-                     ('/updatetagcounts',          UpdateTagCountsHandler),
-                     ('/commentbyindex',           CommentByIndexHandler),
-                     ('/highestindex',             HighestIndexHandler),
-                     ('/setdateorderindex',        SetDateOrderIndexHandler),
-                     ('/fixdateorderindex',        FixDateOrderIndexHandler),
-                     ('/adddateorderstring',       AddDateOrderString),
-                     ('/getdateorderstring',       GetDateOrderString),
-                     ('/datebycount',              DateOrderIndexByCountHandler),
-                     ('/countbydate',              CountByDateOrderIndexHandler),
-                     ('/flush.*',                  FlushMemcacheHandler),
-                     ('/feeds/.*',                 FeedHandler),
-                     ('/_ah/mail/.*',              EmailHandler),
-                     ('/orphanblobs',              OrphanBlobsHandler),
-                     ('/orphanblobs/',             OrphanBlobsHandler),
-                     ('/orphanblobs/(.*)',         OrphanBlobsHandler),
-                     ('/orphanpictures',           OrphanPicturesHandler),
-                     ('/orphanpictures/',          OrphanPicturesHandler),
-                     ('/orphanpictures/(.*)',      OrphanPicturesHandler),
-                     ('/countorphanblobs',         CountOrphanBlobsHandler),
-                     ('/countorphanpictures',      CountOrphanPicturesHandler),
-                     ('/adoptorphanpictures/(.*)', AdoptOrphanPicturesHandler),
-                     ('/deleteorphanblobs',        DeleteOrphanBlobsHandler),
-                     ('/deleteorphanpictures',     DeleteOrphanPicturesHandler),
-                     ('/meta',                     MetaDataHandler),
-                     ('/meta/(.*)',                MetaDataHandler),
-                     ('/replaceimage',             ReplaceImageHandler),
+            ('/',                         NavigatePicturesNew),
+            ('/slideshow',                StartSlideShow),
+            ('/addtag',                   AddTag),
+            ('/addcomment',               AddComment),
+            ('/addgreeting',              AddGreeting),
+            ('/markfavorite',             MarkAsFavorite),
+            ('/clearfavorites',           ClearFavorites),
+            #('/tagdatechanges',           TagDateChanges),
+            ('/favoritespage',            MakeFavoritesPage),
+            ('/showuploadpage',           ShowUploadPage),
+            ('/blobupload',               BlobUploadNewPicture),
+            ('/blobview.*',               BlobViewPicture),
+            ('/uploadpicture',            UploadNewPicture),
+            ('/\d+\.jpg',                 ImageByJpgIndexHandler),
+            ('/jpg.*',                    ImageByJpgIndexHandler),
+            ('/imgbyindex',               ImageByIndexHandler),
+            ('/exivbyindex',              ExivByIndexHandler),
+            ('/datebyindex',              DateByIndexHandler),
+            ('/tagsbyindex',              TagsByIndexHandler),
+            ('/tagsbyname',               TagsByNameHandler),
+            ('/imagesbytag',              ImagesByTagHandler),
+            ('/tagcloud',                 TagCloudHandler),
+            ('/updatetagcounts',          UpdateTagCountsHandler),
+            ('/commentbyindex',           CommentByIndexHandler),
+            ('/highestindex',             HighestIndexHandler),
+            ('/setdateorderindex',        SetDateOrderIndexHandler),
+            ('/fixdateorderindex',        FixDateOrderIndexHandler),
+            ('/adddateorderstring',       AddDateOrderString),
+            ('/getdateorderstring',       GetDateOrderString),
+            ('/datebycount',              DateOrderIndexByCountHandler),
+            ('/countbydate',              CountByDateOrderIndexHandler),
+            ('/flush.*',                  FlushMemcacheHandler),
+            ('/feeds/.*',                 FeedHandler),
+            ('/_ah/mail/.*',              EmailHandler),
+            ('/orphanblobs',              OrphanBlobsHandler),
+            ('/orphanblobs/',             OrphanBlobsHandler),
+            ('/orphanblobs/(.*)',         OrphanBlobsHandler),
+            ('/orphanpictures',           OrphanPicturesHandler),
+            ('/orphanpictures/',          OrphanPicturesHandler),
+            ('/orphanpictures/(.*)',      OrphanPicturesHandler),
+            ('/countorphanblobs',         CountOrphanBlobsHandler),
+            ('/countorphanpictures',      CountOrphanPicturesHandler),
+            ('/adoptorphanpictures/(.*)', AdoptOrphanPicturesHandler),
+            ('/deleteorphanblobs',        DeleteOrphanBlobsHandler),
+            ('/deleteorphanpictures',     DeleteOrphanPicturesHandler),
+            ('/meta',                     MetaDataHandler),
+            ('/meta/(.*)',                MetaDataHandler),
+            ('/replaceimage',             ReplaceImageHandler),
 
-                     ('/react', ReactHandler),
+            ('/recipes',                  RecipesHandler),
+            ('/recipes/(.*)',             RecipesHandler),
+            ('/pancakes',                 PancakesHandler),
 
-                     #('/tiles/(\d+)/(\d+)/(\d+).jpg', TilesHandler), # webgl experiment
+            ('/react', ReactHandler),
 
-                     ('/.*',                       NotFoundPageHandler),
-                    ],
-                    debug=True)
+            #('/tiles/(\d+)/(\d+)/(\d+).jpg', TilesHandler), # webgl experiment
+
+            ('/.*',                       NotFoundPageHandler),
+        ],
+        debug=True
+    )
     wsgiref.handlers.CGIHandler().run(application)
 
 def profile_main():
@@ -1480,6 +1541,7 @@ def profile_main():
     #stats.print_stats(80)  # 80 = how many to print
     # The rest is optional.
     stats.print_callees()
+    import ipdb; ipdb.set_trace()
     stats.print_callers()
     print "</pre>"
 
