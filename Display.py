@@ -1195,25 +1195,50 @@ class RecipesHandler(RequestHandlerParent):
         'waffles',
         'yogurt_wafffles',
     ]
+    OATMEAL = [
+        'oatmeal',
+        'steel_cut_oatmeal',
+        'steel_cut_oats',
+    ]
+    PANEER = [
+        'paneer',
+        'mutar_paneer',
+        'matar_paneer',
+        'mutar',
+        'matar',
+    ]
 
-    def make_recipe_values(self, recipe_name):
-        if recipe_name in RecipesHandler.PANCAKES:
+    @property
+    def recipe_values(self):
+        if self.recipe_name in RecipesHandler.PANCAKES:
             values = dict(
                 url="buttermilk_pancakes.html",
                 title="All-buttermilk pancakes",
                 subtitle="Best pancake recipe",
             )
-        elif recipe_name in RecipesHandler.SOURDOUGH_PANCAKES:
+        elif self.recipe_name in RecipesHandler.SOURDOUGH_PANCAKES:
             values = dict(
                 url="sourdough_pancakes.html",
                 title="Sourdough-buttermilk pancakes",
                 subtitle="Good pancake recipe",
             )
-        elif recipe_name in RecipesHandler.WAFFLES:
+        elif self.recipe_name in RecipesHandler.WAFFLES:
             values = dict(
                 url="yogurt_waffles.html",
                 title="Yogurt waffles",
                 subtitle="Good waffles recipe",
+            )
+        elif self.recipe_name in RecipesHandler.OATMEAL:
+            values = dict(
+                url="instant_pot_steel_cut_oatmeal.html",
+                title="Steel-Cut Instant Pot Oatmeal",
+                subtitle="Steel-Cut oatmeal, easy",
+            )
+        elif self.recipe_name in RecipesHandler.PANEER:
+            values = dict(
+                url="mutar_paneer.html",
+                title="Mutar Paneer",
+                subtitle="Mutar Paneer",
             )
         else:
             values = dict(
@@ -1223,10 +1248,17 @@ class RecipesHandler(RequestHandlerParent):
             )
         return values
 
+    @property
+    def url_end(self):
+        return self.recipe_values['url']
+
+    @property
+    def url_full(self):
+        return "templates/recipes/{}".format(self.url_end)
+
     def get(self, recipe_name=None):
-        values = self.make_recipe_values(recipe_name)
-        full_url = "static/recipes/{}".format(values['url'])
-        page = render_template_text(full_url, values)
+        self.recipe_name = recipe_name
+        page = render_template_text(self.url_full, self.recipe_values)
         self.write_output(page)
 
 class PancakesHandler(RecipesHandler):
