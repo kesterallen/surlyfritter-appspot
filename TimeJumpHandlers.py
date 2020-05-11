@@ -9,7 +9,7 @@ import re
 import StringIO
 import time
 
-from utils import render_template_text, highest_index_value, highest_picture_index, highest_index_by_date
+from utils import highest_index_value, highest_picture_index, highest_index_by_date
 from Parents import RequestHandlerParent
 from DataModels import (Picture, PictureIndex, Greeting, UserFavorite,
                         PictureComment, UniqueTagName, Tag, str_to_dt)
