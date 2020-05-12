@@ -44,6 +44,8 @@ from ImageHandlers import (ReplaceImageHandler, ImageServingUrl,
                            ImageByOrderAddedHandler, ImageByIndexHandler,
                            FilmstripHandler, ImagesByTagHandler)
 
+from Recipes import RecipesHandler, PancakesHandler
+
 from DataModels import (Picture, PictureIndex, Greeting, UserFavorite,
                         PictureComment, UniqueTagName, Tag, str_to_dt)
 
@@ -1176,94 +1178,6 @@ class MetaDataHandler(RequestHandlerParent):
             info['picture_index_date_order_string'] = picture_index.dateOrderString
 
         self.write_output("%s\n" % json.dumps(info))
-
-class RecipesHandler(RequestHandlerParent):
-    """Serve a recipe, or the index of recipies"""
-
-    PANCAKES = [
-        'pancakes',
-        'buttermilk',
-        'flapjacks',
-        'hotcakes',
-        'griddlecakes',
-    ]
-    SOURDOUGH_PANCAKES = [
-        'sourdough',
-        'sourdough_pancakes',
-    ]
-    WAFFLES = [
-        'waffles',
-        'yogurt_wafffles',
-    ]
-    OATMEAL = [
-        'oatmeal',
-        'steel_cut_oatmeal',
-        'steel_cut_oats',
-    ]
-    PANEER = [
-        'paneer',
-        'mutar_paneer',
-        'matar_paneer',
-        'mutar',
-        'matar',
-    ]
-
-    @property
-    def recipe_values(self):
-        if self.recipe_name in RecipesHandler.PANCAKES:
-            values = dict(
-                url="buttermilk_pancakes.html",
-                title="All-buttermilk pancakes",
-                subtitle="Best pancake recipe",
-            )
-        elif self.recipe_name in RecipesHandler.SOURDOUGH_PANCAKES:
-            values = dict(
-                url="sourdough_pancakes.html",
-                title="Sourdough-buttermilk pancakes",
-                subtitle="Good pancake recipe",
-            )
-        elif self.recipe_name in RecipesHandler.WAFFLES:
-            values = dict(
-                url="yogurt_waffles.html",
-                title="Yogurt waffles",
-                subtitle="Good waffles recipe",
-            )
-        elif self.recipe_name in RecipesHandler.OATMEAL:
-            values = dict(
-                url="instant_pot_steel_cut_oatmeal.html",
-                title="Steel-Cut Instant Pot Oatmeal",
-                subtitle="Steel-Cut oatmeal, easy",
-            )
-        elif self.recipe_name in RecipesHandler.PANEER:
-            values = dict(
-                url="mutar_paneer.html",
-                title="Mutar Paneer",
-                subtitle="Mutar Paneer",
-            )
-        else:
-            values = dict(
-                url="recipes.html",
-                title="Recipes List",
-                subtitle="Recipes List",
-            )
-        return values
-
-    @property
-    def url_end(self):
-        return self.recipe_values['url']
-
-    @property
-    def url_full(self):
-        return "templates/recipes/{}".format(self.url_end)
-
-    def get(self, recipe_name=None):
-        self.recipe_name = recipe_name
-        page = render_template_text(self.url_full, self.recipe_values)
-        self.write_output(page)
-
-class PancakesHandler(RecipesHandler):
-    def get(self):
-        super(PancakesHandler, self).get(recipe_name="pancakes")
 
 class WriteBucket(RequestHandlerParent):
     """Test to demonstrate cloudstorage writes."""
