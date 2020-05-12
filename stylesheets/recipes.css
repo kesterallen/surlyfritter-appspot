@@ -1,0 +1,18 @@
+.headline-block {
+  background-color: lightgreen;
+}
+
+.recipe-block {
+  background-color: lightgrey;
+}
+
+.photos-block {
+  background-color: lightblue;
+  padding-top: 10px;
+}
+
+.photos-block img {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
