@@ -33,25 +33,50 @@ from google.appengine.runtime import DeadlineExceededError
 
 from Parents import RequestHandlerParent
 
-from TimeJumpHandlers import (TimeJumpHandler, NavigateByDateHandler,
-                              MiriTimeJumpHandler, JuliaTimeJumpHandler,
-                              LinusTimeJumpHandler, SameAgeJumpHandler,
-                              DAYS_IN_YEAR, SECS_IN_YEAR)
-
-from ImageHandlers import (ReplaceImageHandler, ImageServingUrl,
-                           ImageParent, ImageByDateHandler,
-                           ImageByJpgIndexHandler, ImageByNameHandler,
-                           ImageByOrderAddedHandler, ImageByIndexHandler,
-                           FilmstripHandler, ImagesByTagHandler)
+from TimeJumpHandlers import (
+    TimeJumpHandler,
+    NavigateByDateHandler,
+    MiriTimeJumpHandler,
+    JuliaTimeJumpHandler,
+    LinusTimeJumpHandler,
+    SameAgeJumpHandler,
+    DAYS_IN_YEAR,
+    SECS_IN_YEAR,
+) 
+from ImageHandlers import (
+    ReplaceImageHandler,
+    ImageServingUrl,
+    ImageParent,
+    ImageByDateHandler,
+    ImageByJpgIndexHandler,
+    ImageByNameHandler,
+    ImageByOrderAddedHandler,
+    ImageByIndexHandler,
+    FilmstripHandler,
+    ImagesByTagHandler,
+)
 
 from Recipes import RecipesHandler, PancakesHandler
 
-from DataModels import (Picture, PictureIndex, Greeting, UserFavorite,
-                        PictureComment, UniqueTagName, Tag, str_to_dt)
+from DataModels import (
+    Picture,
+    PictureIndex,
+    Greeting,
+    UserFavorite,
+    PictureComment,
+    UniqueTagName,
+    Tag,
+    str_to_dt,
+)
 
-from utils import (render_template_text, highest_index_value,
-                   highest_picture_index, highest_index_by_date,
-                   cn_hpi, cn_hpi_date)
+from utils import (
+    render_template_text,
+    highest_index_value,
+    highest_picture_index,
+    highest_index_by_date,
+    cn_hpi,
+    cn_hpi_date,
+)
 
 DEFAULT_SLIDE_COUNT = 4
 
@@ -59,9 +84,12 @@ GCS_BUCKET_NAME = os.environ.get('BUCKET_NAME',
                                  app_identity.get_default_gcs_bucket_name())
 GCS_BUCKET = '/' + GCS_BUCKET_NAME
 
-AUTHORIZED_UPLOADERS = ["Kester Allen <kester@gmail.com>",
-                        "Abigail Paske <apaske@gmail.com>",
-                        "Abby Paske <apaske@gmail.com>", ]
+AUTHORIZED_UPLOADERS = [
+    "Kester Allen <kester@gmail.com>",
+    "Abigail Paske <apaske@gmail.com>",
+    "Abby Paske <apaske@gmail.com>",
+]
+
 NOTIFICATION_SENDER = "Kester Allen <kester@gmail.com>"
 NOTIFICATION_RECEIVER = "kester@gmail.com, apaske@gmail.com"
 BLOBSTORE_UPLOAD_DEFAULT = True
@@ -138,10 +166,8 @@ def add_picture(image, name, isBlobstore=BLOBSTORE_UPLOAD_DEFAULT):
     if not memcacheStatus:
         logging.debug("memcaching for dateOrderIndex failed in add_picture")
 
-    pictureIndex = PictureIndex.make_picture_index(picture,
-                                                   count,
-                                                   dateOrderIndex,
-                                                   dateOrderString)
+    pictureIndex = PictureIndex.make_picture_index(
+        picture, count, dateOrderIndex, dateOrderString)
     pictureIndex.put()
     logging.info("done PictureIndex add in add_picture")
 
@@ -1463,6 +1489,8 @@ def real_main():
 
             ('/recipes',                  RecipesHandler),
             ('/recipes/(.*)',             RecipesHandler),
+            ('/recipies',                 RecipesHandler), # I can' t spell
+            ('/recipies/(.*)',            RecipesHandler),
             ('/pancakes',                 PancakesHandler),
 
             ('/react', ReactHandler),

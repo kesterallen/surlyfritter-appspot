@@ -77,17 +77,12 @@ class RecipesHandler(RequestHandlerParent):
     def url_end(self):
         return self.recipe_values['url']
 
-    @property
-    def url_full(self):
-        return "templates/recipes/{}".format(self.url_end)
-
     def get(self, recipe_name=None):
         self.recipe_name = recipe_name
-        page = render_template_text(self.url_full, self.recipe_values)
+        page = render_template_text(self.url_end, self.recipe_values,
+            subdirectory="templates/recipes")
         self.write_output(page)
 
 class PancakesHandler(RecipesHandler):
     def get(self):
         super(PancakesHandler, self).get(recipe_name="pancakes")
-
-
