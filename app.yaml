@@ -60,6 +60,16 @@ handlers:
   upload: static/resume.html
   application_readable: true
 
+- url: /shot-first
+  static_files: static/images/han_shot_first.gif
+  upload: static/images/han_shot_first.gif
+  application_readable: true
+
+- url: /han
+  static_files: static/images/han_shot_first.gif
+  upload: static/images/han_shot_first.gif
+  application_readable: true
+
 - url: /flashcards
   script: flashcards.py
 
