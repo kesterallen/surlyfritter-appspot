@@ -5,7 +5,7 @@ from utils import render_template_text
 class RecipesHandler(RequestHandlerParent):
     """Serve a recipe, or the index of recipies"""
 
-    PANCAKES = [
+    PANCAKES = set([
         'pancakes',
         'buttermilks',
         'flapjacks',
@@ -18,23 +18,25 @@ class RecipesHandler(RequestHandlerParent):
         'hotcake',
         'griddlecake',
         'johnnycake',
-    ]
-    SOURDOUGH_PANCAKES = [
+    ])
+    SOURDOUGH_PANCAKES = set([
         'sourdough',
         'sourdough-pancakes',
         'sourdough_pancakes',
-    ]
-    WAFFLES = [
+    ])
+    WAFFLES = set([
         'waffles',
         'yogurt-wafffles',
         'yogurt_wafffles',
-    ]
-    OATMEAL = [
+    ])
+    OATMEAL = set([
+        'oats',
         'oatmeal',
         'steel_cut_oatmeal',
         'steel_cut_oats',
-    ]
-    PANEER = [
+        'porrridge',
+    ])
+    PANEER = set([
         'paneer',
         'mutar-paneer',
         'matar-paneer',
@@ -42,7 +44,7 @@ class RecipesHandler(RequestHandlerParent):
         'matar_paneer',
         'mutar',
         'matar',
-    ]
+    ])
 
     @property
     def recipe_values(self):
