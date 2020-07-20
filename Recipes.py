@@ -45,6 +45,16 @@ class RecipesHandler(RequestHandlerParent):
         'mutar',
         'matar',
     ])
+    PRETZEL_PIE = set([
+        'pretzel_pie',
+        'pretzel-pie',
+        'pretzelpie',
+    ])
+    FRUIT_CRISP = set([
+        'fruit_crisp',
+        'plum_crisp',
+        'crisp',
+    ])
 
     @property
     def recipe_values(self):
@@ -68,6 +78,14 @@ class RecipesHandler(RequestHandlerParent):
             url = "mutar_paneer.html"
             title = "Mutar Paneer"
             subtitle = "Mutar Paneer"
+        elif self.recipe_name in RecipesHandler.PRETZEL_PIE:
+            url = "strawberry_pretzel_pie.html"
+            title = "Strawberry Prezel Pie"
+            subtitle = "from https://cooking.nytimes.com/recipes/1020323-strawberry-pretzel-pie"
+        elif self.recipe_name in RecipesHandler.FRUIT_CRISP:
+            url = "fruit_crisp.html"
+            title = "Fruit Crisp"
+            subtitle = "easy"
         else:
             url = "recipes.html"
             title = "Recipes List"

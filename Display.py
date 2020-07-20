@@ -1489,7 +1489,7 @@ def real_main():
 
             ('/recipes',                  RecipesHandler),
             ('/recipes/(.*)',             RecipesHandler),
-            ('/recipies',                 RecipesHandler), # I can' t spell
+            ('/recipies',                 RecipesHandler), # "recipes" is hard to spell
             ('/recipies/(.*)',            RecipesHandler),
             ('/pancakes',                 PancakesHandler),
 
