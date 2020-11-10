@@ -1378,6 +1378,18 @@ class ReactHandler(webapp.RequestHandler):
         text = render_template_text('react.html', [])
         self.response.out.write(str(text))
 
+class TourDeCureDonationHandler(RequestHandlerParent):
+    """Redirect to my ADA Tour De Cure Donations page"""
+    def get(self):
+        url = 'https://donations.diabetes.org/site/Donation2?idb=29712086&df_id=21790&FR_ID=13009&mfc_pref=T&PROXY_ID=15794662&PROXY_TYPE=20&21790.donation=form1'
+        self.redirect(url)
+
+class TourDeCureHandler(RequestHandlerParent):
+    """Redirect to my ADA Tour De Cure home page"""
+    def get(self):
+        url = 'http://main.diabetes.org/goto/kester'
+        self.redirect(url)
+
 def real_main():
     application = webapp.WSGIApplication(
         [
@@ -1492,6 +1504,13 @@ def real_main():
             ('/recipies',                 RecipesHandler), # "recipes" is hard to spell
             ('/recipies/(.*)',            RecipesHandler),
             ('/pancakes',                 PancakesHandler),
+            #('/air',                      PancakesHandler),
+            #('/aqi',                      PancakesHandler),
+
+            ('/givememoney',              TourDeCureDonationHandler),
+            ('/donate',                   TourDeCureDonationHandler),
+            ('/diabetes',                 TourDeCureDonationHandler),
+            ('/tourdecure',               TourDeCureHandler),
 
             ('/react', ReactHandler),
 

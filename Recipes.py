@@ -1,6 +1,7 @@
 
 from Parents import RequestHandlerParent
 from utils import render_template_text
+import logging
 
 class RecipesHandler(RequestHandlerParent):
     """Serve a recipe, or the index of recipies"""
@@ -50,14 +51,28 @@ class RecipesHandler(RequestHandlerParent):
         'pretzel-pie',
         'pretzelpie',
     ])
+    KEYLIME_PIE = set([
+        'key_lime_pie',
+        'keylimepie',
+        'key_lime',
+        'keylime',
+    ])
     FRUIT_CRISP = set([
         'fruit_crisp',
         'plum_crisp',
         'crisp',
     ])
+    MEXICAN_RICE = set([
+        'rice',
+        'mexican_rice',
+        'mexican-rice',
+        'instant_pot_mexican_rice',
+        'instant-pot-mexican-rice',
+    ])
 
     @property
     def recipe_values(self):
+        logging.info("Recipe name: {}".format(self.recipe_name))
         if self.recipe_name in RecipesHandler.PANCAKES:
             url = "buttermilk_pancakes.html"
             title = "All-buttermilk pancakes"
@@ -82,10 +97,19 @@ class RecipesHandler(RequestHandlerParent):
             url = "strawberry_pretzel_pie.html"
             title = "Strawberry Prezel Pie"
             subtitle = "from https://cooking.nytimes.com/recipes/1020323-strawberry-pretzel-pie"
+        elif self.recipe_name in RecipesHandler.KEYLIME_PIE:
+            url = "key_lime_pie.html"
+            title = "Key Lime Pie"
+            subtitle = "Recipe courtesy of Joe's Stone Crab"
         elif self.recipe_name in RecipesHandler.FRUIT_CRISP:
             url = "fruit_crisp.html"
             title = "Fruit Crisp"
             subtitle = "easy"
+        elif self.recipe_name in RecipesHandler.MEXICAN_RICE:
+            logging.info("rice rice rice")
+            url = "instant_pot_mexican_rice.html"
+            title = "Mexican Rice (Instant Pot)"
+            subtitle = ""
         else:
             url = "recipes.html"
             title = "Recipes List"
