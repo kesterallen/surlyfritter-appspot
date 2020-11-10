@@ -1,5 +1,27 @@
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
+
 User-agent: Twitterbot
 Disallow:
 
 User-agent: *
 Disallow: /
+Disallow: /same_age
+Disallow: /timejump
+Disallow: /carousel
+Disallow: /add
+Disallow: /admin
+Disallow: /alljp
+Disallow: /approve
+Disallow: /approveall
+Disallow: /delete
+Disallow: /edit
+Disallow: /flush
+Disallow: /geo
+Disallow: /jp
+Disallow: /nearby
+Disallow: /pending
+Disallow: /tag
