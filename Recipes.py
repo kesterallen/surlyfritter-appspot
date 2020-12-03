@@ -69,6 +69,16 @@ class RecipesHandler(RequestHandlerParent):
         'instant_pot_mexican_rice',
         'instant-pot-mexican-rice',
     ])
+    MUJADARA = set([
+        'mujadara',
+        'lentils',
+    ])
+    PUMPKIN_PIE = set([
+        'libbys',
+        'libby',
+        'pumpkin',
+        'pumpkin_pie',
+    ])
 
     @property
     def recipe_values(self):
@@ -106,10 +116,17 @@ class RecipesHandler(RequestHandlerParent):
             title = "Fruit Crisp"
             subtitle = "easy"
         elif self.recipe_name in RecipesHandler.MEXICAN_RICE:
-            logging.info("rice rice rice")
             url = "instant_pot_mexican_rice.html"
             title = "Mexican Rice (Instant Pot)"
             subtitle = ""
+        elif self.recipe_name in RecipesHandler.MUJADARA:
+            url = "mujadara.html"
+            title = "Mujadara"
+            subtitle = ""
+        elif self.recipe_name in RecipesHandler.PUMPKIN_PIE:
+            url = "pumpkin_pie.html"
+            title = "Pumpkin Pie"
+            subtitle = "Libbys Famous"
         else:
             url = "recipes.html"
             title = "Recipes List"
