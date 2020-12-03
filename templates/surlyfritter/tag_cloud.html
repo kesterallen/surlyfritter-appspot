@@ -12,8 +12,7 @@
       <div class="panel-body">
         {% for tag in tags %}
           <span style="font-size:{{tag.fontsize}}px">
-            <!-- re-add tag link -->
-            {{tag.name}}
+            <a href="/tag/{{tag.name}}">{{tag.name}}</a>
           </span>
         {% endfor %}
       </div>
