@@ -53,9 +53,6 @@ a:active {
   list-style-type: none;
   margin-bottom: 0.75em;
 }
-.jobdate {
-  float: right;
-}
 
 .main-column-second {
   grid-area: sidebar;
@@ -117,6 +114,36 @@ a:active {
   margin-left: 20px;
 }
 
+.summary {
+  padding-bottom: 0.5em;
+  padding-left: 0.5em;
+}
+.entry .summary {
+  font-size: 1em;
+  margin-top: 1.33em;
+  margin-bottom: 0.0em;
+  font-weight: bold;
+  width: 100%;
+}
+.entry .summary .title {
+  width: 35%;
+  float: left;
+}
+.entry .summary .company {
+  width: 45%;
+  float: left;
+}
+.entry .summary .dates {
+  width: 20%;
+  float: right;
+  text-align: right;
+}
+.entry .summary .clearfix::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
 .wrapper {
   display: grid;
   grid-gap: 2px;
@@ -137,7 +164,7 @@ a:active {
    }
 }
 
-/* 
+/*
   Just the 6 SVG glyphs from fontawesome (via fontello) for:
     map
     phone
@@ -157,23 +184,23 @@ a:active {
   font-weight: normal;
   font-style: normal;
 }
-     
+
 .icon {
   font-family: "fontello";
   font-style: normal;
   font-weight: normal;
   speak: none;
- 
+
   display: inline-block;
   text-decoration: inherit;
   width: 1em;
   margin-right: .2em;
   text-align: center;
- 
+
   /* For safety - reset parent styles, that can break glyph codes */
   font-variant: normal;
   text-transform: none;
- 
+
   /* Font smoothing. That was taken from TWBS */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
