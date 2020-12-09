@@ -43,11 +43,14 @@
     </div>
 
     <div class="row recipe-block">
-      <div class="col-xs-8 col-xs-offset-2 col-md-5 col-md-offset-1">
-        {% block recipe %}{% endblock %}
+      <div class="col-xs-8 col-xs-offset-2 col-md-4 col-md-offset-1">
+        {% block ingredients %}{% endblock %}
+      </div>
+      <div class="col-xs-8 col-xs-offset-2 col-md-4 col-md-offset-1">
+        {% block instructions %}{% endblock %}
       </div>
 
-      <div class="col-xs-10 col-xs-offset-1 col-md-5 col-md-offset-1 photos-block">
+      <div class="col-xs-10 col-xs-offset-1 col-md-10 col-md-offset-1 photos-block">
         {% block photos %}{% endblock %}
       </div>
 
