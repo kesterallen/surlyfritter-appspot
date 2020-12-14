@@ -6,14 +6,19 @@ Thanks to https://css-tricks.com/snippets/css/complete-guide-grid/ for guidance 
 The responsive features are run with one media selector: @media (min-width: 600px), defining a 7-col grid (5 on left, 2 on right for >600px)
 Total pageweight including font and glyphs is ~60kB as of 19 May 2020. Glyphs are from fontello (defined in the CSS file)
 -->
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="Description" content="Kester Allen's resume.">
+
   <title>Kester Allen's Resume</title>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;1,500&display=swap" rel="stylesheet">
+
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;1,500&display=swap">
   <link rel="stylesheet" href="/stylesheets/resume.css">
   <link rel="icon" href="/images/resume_avi_small.ico">
+
   <base target="_blank">
 </head>
 
@@ -311,9 +316,8 @@ Total pageweight including font and glyphs is ~60kB as of 19 May 2020. Glyphs ar
           <a href="http://www.nasa.gov/mission_pages/chandra/main">Chandra</a>).
         </p>
         <p>
-          Python, Rust, Java, C++/C, PHP,
-          Java, JavaScript, JQuery, React
-          F#, Perl, SQL, MATLAB, IDL, PDL, FORTRAN, shell scripting
+          Python, Rust, Java, C++/C, PHP, JavaScript, JQuery, React F#, Perl,
+          SQL, MATLAB, IDL, PDL, FORTRAN, shell scripting
         </p>
         <p>
           SqlAlchemy, nosetest, git/hg/svn/cvs, JUnit, Hibernate, mapboxgl,
