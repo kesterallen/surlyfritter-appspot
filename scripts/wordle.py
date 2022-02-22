@@ -25,9 +25,14 @@ def letter_locations_good(word, letters):
     """
     goods = []
     for letter, indices in letters.items():
+        # Is the letter in the word at all?
         goods.append(letter in word)
+
+        # If the letter's position is known, is it in the right place?
         if indices["yes"] is not None:
             goods.append(word[indices["yes"]] == letter)
+
+        # If there are excluded spots for the letter, is it NOT there in this word?
         if indices["no"]:
             for index in indices["no"]:
                 goods.append(word[index] != letter)
